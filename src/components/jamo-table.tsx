@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react'
 import { GeometricJamo } from '@/components/geometric-jamo'
 import type { Jamo } from '@/data/types'
 import { getJamoHint } from '@/lib/display'
@@ -12,6 +13,9 @@ const table = (
   'ㅐ ㅔ ㅏ ㅓ ㅒ ㅑ ㅕ ㅝ ㅞ ㅟ'
 ).split(' ')
 
+/** Same swipe-up cross-fade as the level/round indicator and the logo. */
+const swipe = 'transition-[translate_200ms_ease-out,opacity_100ms_ease-in]'
+
 interface JamoTableProps {
   geometric: Record<string, string>
   jamos: Record<string, Jamo>
@@ -22,13 +26,29 @@ interface JamoTableProps {
 
 /**
  * The full 40-letter grid revealed at the end of a round: dim for letters the
- * learner has not met, highlighted for the ones just learned.
+ * learner has not met, highlighted for the ones just learned. Hovering (or
+ * tapping) a letter swipes the glyph up and fades its romanization in.
  */
 export function JamoTable({ geometric, jamos, known = {}, newJamos = [], className }: JamoTableProps) {
+  const [active, setActive] = useState<string | null>(null)
+  const releaseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const activate = (jamo: string) => {
+    if (releaseTimer.current) clearTimeout(releaseTimer.current)
+    setActive(jamo)
+  }
+
+  // Touch needs an explicit release; hover clears on mouse leave.
+  const releaseSoon = () => {
+    if (releaseTimer.current) clearTimeout(releaseTimer.current)
+    releaseTimer.current = setTimeout(() => setActive(null), 500)
+  }
+
   return (
     <div className={cn('jamo-table flex w-[1000px] flex-wrap phone:w-full', className)}>
       {table.map((jamo) => {
         const isNew = newJamos.includes(jamo)
+        const shown = active === jamo
         return (
           <button
             type="button"
@@ -50,23 +70,32 @@ export function JamoTable({ geometric, jamos, known = {}, newJamos = [], classNa
               const url = jamos[jamo]?.audio?.url
               if (url) play(url)
             }}
-            onTouchStart={(event) => {
-              const element = event.currentTarget
-              element.classList.add('touched')
-              setTimeout(() => element.classList.remove('touched'), 500)
+            onMouseEnter={() => activate(jamo)}
+            onMouseLeave={() => setActive(null)}
+            onTouchStart={() => {
+              activate(jamo)
+              releaseSoon()
             }}
           >
             <GeometricJamo
               jamo={jamo}
               geometric={geometric}
-              className="relative z-5 h-[60px] w-[60px] transition-opacity phone:h-[1.2rem] phone:w-[60%] group-hover/jamo:opacity-0 group-[.touched]/jamo:opacity-0"
+              className={cn(
+                'relative z-5 h-[60px] w-[60px] translate-y-0 phone:h-[1.2rem] phone:w-[60%]',
+                'group-hover/jamo:-translate-y-[16px] group-hover/jamo:opacity-0',
+                shown && '-translate-y-[16px] opacity-0',
+                swipe,
+              )}
             />
             <span
               className={cn(
-                'jamo-table__jamo__latin pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
-                'text-[0.8888rem] font-black text-brand-red opacity-0',
-                'group-hover/jamo:opacity-100 group-[.touched]/jamo:opacity-100',
+                'jamo-table__jamo__latin pointer-events-none absolute top-1/2 left-1/2',
+                'text-[0.8888rem] font-black text-brand-red',
+                '[translate:-50%_calc(-50%_+_16px)] opacity-0',
+                'group-hover/jamo:[translate:-50%_-50%] group-hover/jamo:opacity-100',
+                shown && '[translate:-50%_-50%] opacity-100',
                 isMedial(jamo) && 'vowel text-brand-blue',
+                swipe,
               )}
             >
               {getJamoHint(jamo)}
