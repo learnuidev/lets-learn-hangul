@@ -63,6 +63,8 @@
   html {
     font-size: 36px;
     background-color: var(--color-butter);
+    /* Reserved gutter keeps the fixed header still when an overlay opens. */
+    scrollbar-gutter: stable;
   }
 
   @media (max-width: 600px) {

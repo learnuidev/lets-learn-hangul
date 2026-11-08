@@ -16,7 +16,7 @@ export function CourseIndex({ levels, rounds }: CourseIndexProps) {
   const latest = parseFloat(user.latest ?? '') || 1.1
 
   return (
-    <Dialog open={indexShowing} onOpenChange={(open) => !open && hideIndex()}>
+    <Dialog open={indexShowing} onOpenChange={(open) => !open && hideIndex()} modal={false}>
       <DialogContent showCloseButton={false} aria-describedby={undefined}>
         <DialogTitle className="sr-only">Course index</DialogTitle>
 
@@ -64,7 +64,7 @@ export function CourseIndex({ levels, rounds }: CourseIndexProps) {
                     >
                       <Link
                         className={cn(
-                          'round-name relative block min-h-[1.7222rem] text-[0.5555rem] leading-[1.2] font-semibold text-inherit',
+                          'round-name relative block min-h-[1.7222rem] text-[0.5555rem] leading-[1.2] font-semibold uppercase text-inherit',
                           incomplete && 'pointer-events-none opacity-50',
                         )}
                         to="/level/$level/round/$round"
@@ -78,7 +78,7 @@ export function CourseIndex({ levels, rounds }: CourseIndexProps) {
                           {round.round}
                         </Badge>
                         <span className="name">{round.name}</span>
-                        <span className="jamos block font-normal opacity-50">
+                        <span className="jamos block font-normal normal-case opacity-50">
                           {(round.jamo ?? []).map((jamo) => (jamo === '-' ? 'ㅇ' : jamo)).join(' ')}
                         </span>
                       </Link>
