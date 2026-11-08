@@ -15,6 +15,7 @@ import { Route as LearnedemallRouteImport } from './routes/learnedemall'
 import { Route as LearnedeverythingRouteImport } from './routes/learnedeverything'
 import { Route as NowwhatRouteImport } from './routes/nowwhat'
 import { Route as ReturnRouteImport } from './routes/return'
+import { Route as StatsRouteImport } from './routes/stats'
 import { Route as LevelLevelRouteImport } from './routes/level.$level'
 import { Route as LevelLevelIndexRouteImport } from './routes/level.$level.index'
 import { Route as LevelLevelCompleteIndexRouteImport } from './routes/level.$level.complete.index'
@@ -65,6 +66,11 @@ const NowwhatRoute = NowwhatRouteImport.update({
 const ReturnRoute = ReturnRouteImport.update({
   id: '/return',
   path: '/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatsRoute = StatsRouteImport.update({
+  id: '/stats',
+  path: '/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LevelLevelRoute = LevelLevelRouteImport.update({
@@ -197,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/learnedeverything': typeof LearnedeverythingRoute
   '/nowwhat': typeof NowwhatRoute
   '/return': typeof ReturnRoute
+  '/stats': typeof StatsRoute
   '/level/$level': typeof LevelLevelRouteWithChildren
   '/level/$level/': typeof LevelLevelIndexRoute
   '/level/$level/complete/$levelComplete': typeof LevelLevelCompleteLevelCompleteRoute
@@ -226,6 +233,7 @@ export interface FileRoutesByTo {
   '/learnedeverything': typeof LearnedeverythingRoute
   '/nowwhat': typeof NowwhatRoute
   '/return': typeof ReturnRoute
+  '/stats': typeof StatsRoute
   '/level/$level': typeof LevelLevelIndexRoute
   '/level/$level/complete/$levelComplete': typeof LevelLevelCompleteLevelCompleteRoute
   '/level/$level/intro/$levelIntro': typeof LevelLevelIntroLevelIntroRoute
@@ -254,6 +262,7 @@ export interface FileRoutesById {
   '/learnedeverything': typeof LearnedeverythingRoute
   '/nowwhat': typeof NowwhatRoute
   '/return': typeof ReturnRoute
+  '/stats': typeof StatsRoute
   '/level/$level': typeof LevelLevelRouteWithChildren
   '/level/$level/': typeof LevelLevelIndexRoute
   '/level/$level/complete/$levelComplete': typeof LevelLevelCompleteLevelCompleteRoute
@@ -285,6 +294,7 @@ export interface FileRouteTypes {
     | '/learnedeverything'
     | '/nowwhat'
     | '/return'
+    | '/stats'
     | '/level/$level'
     | '/level/$level/'
     | '/level/$level/complete/$levelComplete'
@@ -314,6 +324,7 @@ export interface FileRouteTypes {
     | '/learnedeverything'
     | '/nowwhat'
     | '/return'
+    | '/stats'
     | '/level/$level'
     | '/level/$level/complete/$levelComplete'
     | '/level/$level/intro/$levelIntro'
@@ -341,6 +352,7 @@ export interface FileRouteTypes {
     | '/learnedeverything'
     | '/nowwhat'
     | '/return'
+    | '/stats'
     | '/level/$level'
     | '/level/$level/'
     | '/level/$level/complete/$levelComplete'
@@ -371,6 +383,7 @@ export interface RootRouteChildren {
   LearnedeverythingRoute: typeof LearnedeverythingRoute
   NowwhatRoute: typeof NowwhatRoute
   ReturnRoute: typeof ReturnRoute
+  StatsRoute: typeof StatsRoute
   LevelLevelRoute: typeof LevelLevelRouteWithChildren
 }
 
@@ -416,6 +429,13 @@ declare module '@tanstack/react-router' {
       path: '/return'
       fullPath: '/return'
       preLoaderRoute: typeof ReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stats': {
+      id: '/stats'
+      path: '/stats'
+      fullPath: '/stats'
+      preLoaderRoute: typeof StatsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/level/$level': {
@@ -640,6 +660,7 @@ const rootRouteChildren: RootRouteChildren = {
   LearnedeverythingRoute: LearnedeverythingRoute,
   NowwhatRoute: NowwhatRoute,
   ReturnRoute: ReturnRoute,
+  StatsRoute: StatsRoute,
   LevelLevelRoute: LevelLevelRouteWithChildren,
 }
 export const routeTree = rootRouteImport

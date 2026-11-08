@@ -7,6 +7,7 @@ import { getJamoHint } from '@/lib/display'
 import { isMedial } from '@/lib/hangul'
 import { getQuizOptions, getQuizQueue, paramFromStep, stepFromParams } from '@/lib/quiz'
 import { play, playEffect } from '@/lib/sound'
+import { useSession } from '@/hooks/use-session'
 import { cn } from '@/lib/utils'
 
 interface RoundPreLearnProps {
@@ -26,6 +27,7 @@ interface RoundPreLearnProps {
  */
 export function RoundPreLearn({ level, round, shapes, jamos, rounds, step }: RoundPreLearnProps) {
   const navigate = useNavigate()
+  const { recordQuizAnswer } = useSession()
   const levelParam = String(level.level)
   const roundParam = String(round.round)
   const roundKey = `${levelParam}.${roundParam}`
@@ -57,6 +59,7 @@ export function RoundPreLearn({ level, round, shapes, jamos, rounds, step }: Rou
 
     if (option === current) {
       playEffect('correct')
+      recordQuizAnswer(level, round, current, true)
       const audioUrl = jamos[current]?.audio?.url
       if (audioUrl) soundTimer.current = setTimeout(() => play(audioUrl), 400)
       setAnswered('correct')
@@ -78,6 +81,7 @@ export function RoundPreLearn({ level, round, shapes, jamos, rounds, step }: Rou
     }
 
     playEffect('wrong')
+    recordQuizAnswer(level, round, current, false)
     setAnswered('wrong')
     if (wrongTimer.current) clearTimeout(wrongTimer.current)
     wrongTimer.current = setTimeout(() => setAnswered(null), 550)

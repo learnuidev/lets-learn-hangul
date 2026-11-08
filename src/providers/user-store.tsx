@@ -9,8 +9,22 @@ import {
   type ReactNode,
 } from 'react'
 import { isBrowser } from '@/lib/env'
+import {
+  emptyLifetime,
+  incrementLifetime,
+  normalizeLifetime,
+  type Counts,
+  type LifetimeStats,
+} from '@/lib/lifetime'
 
 const STORAGE_KEY = 'lets-learn-hangul'
+
+/**
+ * Cap on the raw event log. Lifetime numbers live in `stats`, so the log only
+ * needs to stay useful as a recent activity trail — without a cap it grows for
+ * as long as someone keeps practicing and would eventually break localStorage.
+ */
+const HISTORY_LIMIT = 500
 
 export interface HistoryEvent {
   time: string
@@ -24,6 +38,8 @@ export interface UserState {
   latest: string | null
   history: HistoryEvent[]
   hinted: { romanization: boolean; peeking: boolean }
+  /** Lifetime learning record: daily buckets, per-lesson records and streaks. */
+  stats: LifetimeStats
 }
 
 export type HintName = keyof UserState['hinted']
@@ -34,6 +50,7 @@ export const defaultUser: UserState = {
   latest: null,
   history: [],
   hinted: { romanization: false, peeking: false },
+  stats: emptyLifetime(),
 }
 
 interface UserContextValue {
@@ -43,6 +60,8 @@ interface UserContextValue {
   startHistory: () => void
   setLatest: (level: number, round: number) => void
   recordEvent: (type: string, data?: Record<string, unknown>) => void
+  /** Tally practice into today's bucket and the lesson's bucket. */
+  recordProgress: (roundKey: string, delta: Partial<Counts>, seconds?: number) => void
   dismissHint: (hint: HintName) => void
   indexShowing: boolean
   showIndex: () => void
@@ -68,7 +87,21 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const stored = window.localStorage.getItem(STORAGE_KEY)
       if (stored) {
         const parsed = JSON.parse(stored) as Partial<UserState>
-        setUser({ ...defaultUser, ...parsed, hinted: { ...defaultUser.hinted, ...parsed.hinted } })
+        const history = Array.isArray(parsed.history) ? parsed.history : []
+        const next: UserState = {
+          ...defaultUser,
+          ...parsed,
+          hinted: { ...defaultUser.hinted, ...parsed.hinted },
+          history,
+          // A profile saved before stats existed has history but no stats —
+          // replay it so earlier practice still counts.
+          stats: normalizeLifetime(parsed.stats, history),
+        }
+        setUser(next)
+        // Write the replayed record back once. Otherwise it would be rebuilt
+        // from the event log on every load, and the capped log would start
+        // dropping the older events it is built from.
+        if (!parsed.stats) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
       }
     } catch {
       // Corrupt or blocked storage: start fresh.
@@ -98,9 +131,23 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const recordEvent = useCallback(
     (type: string, data: Record<string, unknown> = {}) => {
+      update((current) => {
+        const history = [...current.history, { time: new Date().toISOString(), type, ...data }]
+        return {
+          ...current,
+          history: history.length > HISTORY_LIMIT ? history.slice(-HISTORY_LIMIT) : history,
+        }
+      })
+    },
+    [update],
+  )
+
+  const recordProgress = useCallback(
+    (roundKey: string, delta: Partial<Counts>, seconds?: number) => {
+      const at = new Date().toISOString()
       update((current) => ({
         ...current,
-        history: [...current.history, { time: new Date().toISOString(), type, ...data }],
+        stats: incrementLifetime(current.stats, roundKey, delta, at, seconds),
       }))
     },
     [update],
@@ -137,6 +184,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       startHistory,
       setLatest,
       recordEvent,
+      recordProgress,
       dismissHint,
       indexShowing,
       showIndex,
@@ -149,6 +197,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       startHistory,
       setLatest,
       recordEvent,
+      recordProgress,
       dismissHint,
       indexShowing,
       showIndex,

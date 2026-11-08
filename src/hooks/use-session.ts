@@ -18,7 +18,7 @@ export function roundKeyOf(level: Level, round: Round): string {
  */
 export function useSession() {
   const navigate = useNavigate()
-  const { recordEvent, setLatest, dismissHint } = useUser()
+  const { recordEvent, recordProgress, setLatest, dismissHint } = useUser()
 
   return useMemo(() => {
     return {
@@ -36,9 +36,15 @@ export function useSession() {
       /** Last word answered: record progress and show the summary. */
       completeSession(level: Level, round: Round) {
         const roundKey = roundKeyOf(level, round)
-        finishStats(roundKey)
+        const finished = finishStats(roundKey)
+        // Seconds for this attempt, so the lesson keeps a best/last time.
+        const seconds =
+          finished.started > 0
+            ? Math.max(0, Math.round((finished.completed - finished.started) / 1000))
+            : undefined
         setLatest(level.level, round.round)
-        recordEvent('session-complete', { round: roundKey })
+        recordProgress(roundKey, { lessons: 1 }, seconds)
+        recordEvent('session-complete', { round: roundKey, seconds })
         navigate({
           to: '/level/$level/round/$round/complete',
           params: { level: String(level.level), round: String(round.round) },
@@ -48,23 +54,33 @@ export function useSession() {
       recordHit(level: Level, round: Round, word: string) {
         const roundKey = roundKeyOf(level, round)
         bumpStats(roundKey, { words: 1 })
+        recordProgress(roundKey, { words: 1 })
         recordEvent('word-hit', { word, round: roundKey })
       },
 
       recordMiss(level: Level, round: Round, word: string) {
         const roundKey = roundKeyOf(level, round)
         bumpStats(roundKey, { misses: 1 })
+        recordProgress(roundKey, { misses: 1 })
         recordEvent('word-miss', { word, round: roundKey })
       },
 
       recordPeek(level: Level, round: Round, jamo: string, word: string) {
         const roundKey = roundKeyOf(level, round)
         bumpStats(roundKey, { peeks: 1 })
+        recordProgress(roundKey, { peeks: 1 })
         recordEvent('peek', { jamo, word, round: roundKey })
         dismissHint('peeking')
       },
 
+      /** Warm-up quiz answer. Both outcomes count toward lesson performance. */
+      recordQuizAnswer(level: Level, round: Round, jamo: string, correct: boolean) {
+        const roundKey = roundKeyOf(level, round)
+        recordProgress(roundKey, correct ? { quizCorrect: 1 } : { quizWrong: 1 })
+        recordEvent(correct ? 'quiz-correct' : 'quiz-wrong', { jamo, round: roundKey })
+      },
+
       dismissHint,
     }
-  }, [dismissHint, navigate, recordEvent, setLatest])
+  }, [dismissHint, navigate, recordEvent, recordProgress, setLatest])
 }

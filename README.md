@@ -127,8 +127,41 @@ There is no global store library. Three React contexts cover the app:
 
 | Provider | File | Responsibility |
 | -------- | ---- | -------------- |
-| `UserProvider` | `src/providers/user-store.tsx` | Saved progress + hints in `localStorage` (`lets-learn-hangul`), event history, and whether the course index overlay is open |
+| `UserProvider` | `src/providers/user-store.tsx` | Saved progress + hints in `localStorage` (`lets-learn-hangul`), event history, the lifetime stats record, and whether the course index overlay is open |
 | `LevelDataProvider` | `src/providers/course-context.tsx` | The level bundle from `beforeLoad` plus typed access to the current route params, so any round screen can call `useRoundData()` |
+
+### Stats
+
+Both halves of a round are recorded: every warm-up quiz answer (`round-prelearn.tsx`) and every
+word typed, missed, peeked at or finished in the typing exercise (`use-session.ts`). They land
+in two shapes, both inside the saved profile, so `/stats` never needs a server:
+
+| Bucket | Shape | Used for |
+| ------ | ----- | -------- |
+| `stats.days` | one `{ words, misses, peeks, lessons, quizCorrect, quizWrong }` per local day | totals, the daily streak, the last-two-weeks discs |
+| `stats.rounds` | the same counters per `level.round`, plus `lastAt` and `bestSeconds` | performance per lesson |
+
+- `src/lib/lifetime.ts` holds all of it as pure functions — `incrementLifetime`,
+  `computeStreaks`, `totalCounts`, `recentDays` — so the provider stays a thin `setState`
+  wrapper and the logic is testable without a DOM.
+- `bestSeconds` comes from the round's `sessionStorage` attempt record at
+  `completeSession()`, and only ever ratchets down.
+- A profile written before this feature existed has `history` but no `stats`, so
+  `normalizeLifetime` replays that log into the new buckets on first load and writes the
+  result back — earlier practice keeps counting, and the replay is not repeated every load.
+  The replay understands every recorded event type (`word-hit`, `word-miss`, `peek`,
+  `session-complete`, `quiz-correct`, `quiz-wrong`). Quiz answers were only recorded from
+  this feature onward, so a profile whose quiz practice predates it starts at zero there:
+  the figures appear once a quiz is played again.
+- `history` is capped at `HISTORY_LIMIT` (500) entries. Lifetime numbers live in `stats`; the
+  log is only a recent-activity trail, and without a cap it would grow until `localStorage`
+  gave out.
+
+`/stats` (`src/routes/stats.tsx` → `src/components/stats-page.tsx`) renders the record in the
+round summary's vocabulary: a `.radial` stage of `Circle` discs with uppercase labels, then a
+per-lesson breakdown laid out like the course index. The icon in the bottom-left corner
+(`stats-link.tsx`) is the entry point and is hidden on the page itself; the numbers appear
+after hydration because the record only exists in the browser.
 
 ### Exercise progress lives in the URL
 
