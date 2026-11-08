@@ -74,11 +74,28 @@ There is no global store library. Three React contexts cover the app:
 | Provider | File | Responsibility |
 | -------- | ---- | -------------- |
 | `UserProvider` | `src/providers/user-store.tsx` | Saved progress + hints in `localStorage` (`lets-learn-hangul`), event history, and whether the course index overlay is open |
-| `SessionProvider` | `src/providers/session-store.tsx` | The two state machines: the warm-up letter quiz (`presession`) and the typing session (`session`) — queue, current word, misses, peeks, timing |
 | `LevelDataProvider` | `src/providers/course-context.tsx` | The level bundle from `beforeLoad` plus typed access to the current route params, so any round screen can call `useRoundData()` |
 
-Session state lives for as long as the level layout is mounted, so navigating between a
-round's screens keeps the session intact.
+### Exercise progress lives in the URL
+
+Every exercise step is its own addressable page:
+
+| Exercise | URLs |
+| -------- | ---- |
+| Warm-up quiz | `/level/1/round/2/pre`, `/pre/2`, `/pre/3`, `/pre/4` |
+| Typing | `/level/1/round/2/learn`, `/learn/2` … `/learn/9` |
+
+- The quiz order is derived **deterministically** from the round (`src/lib/quiz.ts`, seeded
+  PRNG), so `/pre/3` always shows the same question — reload, back/forward and shared links
+  all work.
+- The typing exercise asks for `[…]/learn/$step` where the word is simply
+  `[headword, ...words][step - 1]` (`getRoundWords`).
+- The aggregate numbers for the summary (words read, misses, peeks, elapsed time) are the
+  only thing kept out of the URL, in `sessionStorage` (`src/lib/stats.ts`), so
+  `/complete` still reports real figures after a reload.
+
+`useSession()` (`src/hooks/use-session.ts`) is a plain hook — no provider — that starts a
+round's counters, records hits/misses/peeks into the saved profile, and navigates.
 
 ### Routes
 
@@ -167,8 +184,7 @@ server.mjs                  # production entry (srvx + static client build)
 - Pressing <kbd>Enter</kbd> anywhere triggers the screen's primary action
   (`[data-autofocus]`), as in the original app.
 - Romanization accepts every valid reading of a word; after three misses on the same word the
-  answer is revealed and the word is re-queued (`src/lib/romanize.ts`,
-  `src/lib/validation.ts`).
+  answer is revealed and “Next” moves on (`src/lib/romanize.ts`, `src/lib/validation.ts`).
 - Audio is only initialised after the first interaction, so nothing is downloaded on load.
 
 ## Credits

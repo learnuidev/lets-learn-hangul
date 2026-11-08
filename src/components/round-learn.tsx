@@ -1,12 +1,16 @@
-import { useEffect, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import { Circle } from '@/components/circle'
 import { BigWord } from '@/components/big-word'
 import { SoundButton } from '@/components/sound-button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { LearnResponseForm, LearnResponseNext } from '@/components/learn-response-form'
-import type { Level, Round, Word } from '@/data/types'
+import type { Level, RomanizationResult, Round, Word } from '@/data/types'
 import { getRomanizations } from '@/lib/romanize'
-import { useSession } from '@/providers/session-store'
+import { getRoundWords, paramFromStep, stepFromParams } from '@/lib/quiz'
+import { play, playEffect } from '@/lib/sound'
+import { checkRomanization } from '@/lib/validation'
+import { useSession } from '@/hooks/use-session'
 import { useUser } from '@/providers/user-store'
 import { cn } from '@/lib/utils'
 
@@ -15,31 +19,47 @@ interface RoundLearnProps {
   round: Round
   shapes: Record<string, string>
   words: Record<string, Word>
+  step?: string
 }
 
-/** The core exercise: type the romanization of each word in the round. */
-export function RoundLearn({ shapes, words }: RoundLearnProps) {
-  const { session, updateResponse, submitResponse, handlePeek, continueSession } = useSession()
+/**
+ * The core exercise: type the romanization of each word in the round. The word
+ * being asked for is part of the URL (`/learn`, `/learn/2`, …), so reloading or
+ * sharing a link lands on the same word.
+ */
+export function RoundLearn({ level, round, shapes, words, step }: RoundLearnProps) {
+  const navigate = useNavigate()
+  const { recordHit, recordMiss, recordPeek, completeSession } = useSession()
   const { user, dismissHint } = useUser()
 
-  const word = session.current ?? ''
-  const { response, showCorrect, responseError, showAnswer, currentMisses } = session
+  const levelParam = String(level.level)
+  const roundParam = String(round.round)
+
+  const list = getRoundWords(round)
+  const index = Math.min(stepFromParams(step), Math.max(list.length - 1, 0))
+  const word = list[index] ?? ''
   const meta = words[word]
-  const hasImage = Boolean(meta?.image?.url)
-  const hasAudio = Boolean(meta?.audio?.url)
 
-  const phonetics = getRomanizations(word, true)
-    .syllables.map((syllable) => syllable.ideal)
-    .join(' · ')
+  const [response, setResponse] = useState('')
+  const [responseError, setResponseError] = useState<RomanizationResult | null>(null)
+  const [showCorrect, setShowCorrect] = useState(false)
+  const [showAnswer, setShowAnswer] = useState(false)
+  const [misses, setMisses] = useState(0)
+  const soundTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const isOneSyllable = word.length === 1
-  const isMedium = word.length > 3 && word.length < 5
-  const isLong = word.length >= 5
+  // Each step starts from a clean slate.
+  useEffect(() => {
+    setResponse('')
+    setResponseError(null)
+    setShowCorrect(false)
+    setShowAnswer(false)
+    setMisses(0)
+    return () => {
+      if (soundTimer.current) clearTimeout(soundTimer.current)
+    }
+  }, [index])
 
-  const syllableSize = isLong ? '0.5em' : isMedium ? '0.75em' : '1em'
-  const textSize = isLong ? '0.3333em' : isMedium ? '0.5em' : '0.6666em'
-
-  // The original locked scrolling on this screen so the keyboard could not push
+  // The original locked scrolling here so the on-screen keyboard could not shove
   // the layout around.
   useEffect(() => {
     const preventScroll = (event: Event) => {
@@ -50,8 +70,57 @@ export function RoundLearn({ shapes, words }: RoundLearnProps) {
     return () => window.removeEventListener('scroll', preventScroll)
   }, [])
 
-  const showPeekHint = !user.hinted.peeking && currentMisses > 0
-  const showEntryHint = !user.hinted.romanization
+  const submitResponse = (): RomanizationResult => {
+    const result = checkRomanization(word, response, level.level === 5)
+    if (response.length) dismissHint('romanization')
+
+    if (result.correct) {
+      playEffect('correct')
+      recordHit(level, round, word)
+      setShowCorrect(true)
+      setResponseError(null)
+      const audioUrl = meta?.audio?.url
+      if (audioUrl) soundTimer.current = setTimeout(() => play(audioUrl), 400)
+      return result
+    }
+
+    playEffect('wrong')
+    recordMiss(level, round, word)
+    const nextMisses = misses + 1
+    setMisses(nextMisses)
+    if (nextMisses < 3) setResponseError(result)
+    else {
+      setResponseError(null)
+      setShowAnswer(true)
+    }
+    return result
+  }
+
+  const goNext = () => {
+    if (index + 1 < list.length) {
+      navigate({
+        to: '/level/$level/round/$round/learn/$step',
+        params: { level: levelParam, round: roundParam, step: paramFromStep(index + 1) },
+      })
+      return
+    }
+    completeSession(level, round)
+  }
+
+  const hasImage = Boolean(meta?.image?.url)
+  const hasAudio = Boolean(meta?.audio?.url)
+  const phonetics = getRomanizations(word, true)
+    .syllables.map((syllable) => syllable.ideal)
+    .join(' · ')
+
+  const isOneSyllable = word.length === 1
+  const isMedium = word.length > 3 && word.length < 5
+  const isLong = word.length >= 5
+  const syllableSize = isLong ? '0.5em' : isMedium ? '0.75em' : '1em'
+  const textSize = isLong ? '0.3333em' : isMedium ? '0.5em' : '0.6666em'
+
+  const showPeekHint = !user.hinted.peeking && misses > 0
+  const showEntryHint = !user.hinted.romanization && !showCorrect && !showAnswer
 
   return (
     <div
@@ -108,7 +177,7 @@ export function RoundLearn({ shapes, words }: RoundLearnProps) {
           <BigWord
             word={word}
             shapes={shapes}
-            onPeek={handlePeek}
+            onPeek={(jamo) => recordPeek(level, round, jamo, word)}
             className="[&_.big-syllable]:h-[var(--syllable-size)] [&_.big-syllable]:w-[var(--syllable-size)] [&_.big-text]:h-[var(--syllable-size)] [&_.big-text]:w-[var(--text-size)]"
           />
         </div>
@@ -192,7 +261,7 @@ export function RoundLearn({ shapes, words }: RoundLearnProps) {
           <label className="phone:absolute phone:top-[-0.25rem] phone:right-[20px]">Romanization</label>
         )}
 
-        <Tooltip open={showEntryHint && !showCorrect && !showAnswer}>
+        <Tooltip open={showEntryHint}>
           <TooltipTrigger asChild>
             <span className="absolute top-0 left-1/2 block h-0 w-0" />
           </TooltipTrigger>
@@ -218,7 +287,10 @@ export function RoundLearn({ shapes, words }: RoundLearnProps) {
               response={response}
               responseError={responseError}
               showCorrect={showCorrect}
-              onChange={updateResponse}
+              onChange={(value) => {
+                setResponse(value)
+                setResponseError(null)
+              }}
               onSubmit={submitResponse}
               onFocus={() => {
                 if (window.scrollY > 0) window.scrollTo(0, 0)
@@ -227,7 +299,7 @@ export function RoundLearn({ shapes, words }: RoundLearnProps) {
           </div>
         )}
 
-        {(showCorrect || showAnswer) && <LearnResponseNext onClick={continueSession} />}
+        {(showCorrect || showAnswer) && <LearnResponseNext onClick={goNext} />}
       </div>
     </div>
   )

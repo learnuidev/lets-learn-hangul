@@ -22,18 +22,20 @@ import { Route as LevelLevelCompleteLevelCompleteRouteImport } from './routes/le
 import { Route as LevelLevelIntroLevelIntroRouteImport } from './routes/level.$level.intro.$levelIntro'
 import { Route as LevelLevelRoundRoundRouteImport } from './routes/level.$level.round.$round'
 import { Route as LevelLevelRoundRoundIndexRouteImport } from './routes/level.$level.round.$round.index'
-import { Route as LevelLevelRoundRoundLearnRouteImport } from './routes/level.$level.round.$round.learn'
-import { Route as LevelLevelRoundRoundPreRouteImport } from './routes/level.$level.round.$round.pre'
 import { Route as LevelLevelRoundRoundReadyRouteImport } from './routes/level.$level.round.$round.ready'
 import { Route as LevelLevelRoundRoundCompleteIndexRouteImport } from './routes/level.$level.round.$round.complete.index'
 import { Route as LevelLevelRoundRoundCompleteRoundCompleteRouteImport } from './routes/level.$level.round.$round.complete.$roundComplete'
 import { Route as LevelLevelRoundRoundHeadwordIndexRouteImport } from './routes/level.$level.round.$round.headword.index'
 import { Route as LevelLevelRoundRoundHeadwordHeadwordRouteImport } from './routes/level.$level.round.$round.headword.$headword'
 import { Route as LevelLevelRoundRoundIntroRoundIntroRouteImport } from './routes/level.$level.round.$round.intro.$roundIntro'
+import { Route as LevelLevelRoundRoundLearnIndexRouteImport } from './routes/level.$level.round.$round.learn.index'
+import { Route as LevelLevelRoundRoundLearnStepRouteImport } from './routes/level.$level.round.$round.learn.$step'
 import { Route as LevelLevelRoundRoundLetterIndexRouteImport } from './routes/level.$level.round.$round.letter.index'
 import { Route as LevelLevelRoundRoundLetterLetterRouteImport } from './routes/level.$level.round.$round.letter.$letter'
 import { Route as LevelLevelRoundRoundLettersIndexRouteImport } from './routes/level.$level.round.$round.letters.index'
 import { Route as LevelLevelRoundRoundLettersLettersRouteImport } from './routes/level.$level.round.$round.letters.$letters'
+import { Route as LevelLevelRoundRoundPreIndexRouteImport } from './routes/level.$level.round.$round.pre.index'
+import { Route as LevelLevelRoundRoundPreStepRouteImport } from './routes/level.$level.round.$round.pre.$step'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -103,17 +105,6 @@ const LevelLevelRoundRoundIndexRoute =
     path: '/',
     getParentRoute: () => LevelLevelRoundRoundRoute,
   } as any)
-const LevelLevelRoundRoundLearnRoute =
-  LevelLevelRoundRoundLearnRouteImport.update({
-    id: '/learn',
-    path: '/learn',
-    getParentRoute: () => LevelLevelRoundRoundRoute,
-  } as any)
-const LevelLevelRoundRoundPreRoute = LevelLevelRoundRoundPreRouteImport.update({
-  id: '/pre',
-  path: '/pre',
-  getParentRoute: () => LevelLevelRoundRoundRoute,
-} as any)
 const LevelLevelRoundRoundReadyRoute =
   LevelLevelRoundRoundReadyRouteImport.update({
     id: '/ready',
@@ -150,6 +141,18 @@ const LevelLevelRoundRoundIntroRoundIntroRoute =
     path: '/intro/$roundIntro',
     getParentRoute: () => LevelLevelRoundRoundRoute,
   } as any)
+const LevelLevelRoundRoundLearnIndexRoute =
+  LevelLevelRoundRoundLearnIndexRouteImport.update({
+    id: '/learn/',
+    path: '/learn/',
+    getParentRoute: () => LevelLevelRoundRoundRoute,
+  } as any)
+const LevelLevelRoundRoundLearnStepRoute =
+  LevelLevelRoundRoundLearnStepRouteImport.update({
+    id: '/learn/$step',
+    path: '/learn/$step',
+    getParentRoute: () => LevelLevelRoundRoundRoute,
+  } as any)
 const LevelLevelRoundRoundLetterIndexRoute =
   LevelLevelRoundRoundLetterIndexRouteImport.update({
     id: '/letter/',
@@ -174,6 +177,18 @@ const LevelLevelRoundRoundLettersLettersRoute =
     path: '/letters/$letters',
     getParentRoute: () => LevelLevelRoundRoundRoute,
   } as any)
+const LevelLevelRoundRoundPreIndexRoute =
+  LevelLevelRoundRoundPreIndexRouteImport.update({
+    id: '/pre/',
+    path: '/pre/',
+    getParentRoute: () => LevelLevelRoundRoundRoute,
+  } as any)
+const LevelLevelRoundRoundPreStepRoute =
+  LevelLevelRoundRoundPreStepRouteImport.update({
+    id: '/pre/$step',
+    path: '/pre/$step',
+    getParentRoute: () => LevelLevelRoundRoundRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -188,19 +203,21 @@ export interface FileRoutesByFullPath {
   '/level/$level/intro/$levelIntro': typeof LevelLevelIntroLevelIntroRoute
   '/level/$level/round/$round': typeof LevelLevelRoundRoundRouteWithChildren
   '/level/$level/complete/': typeof LevelLevelCompleteIndexRoute
-  '/level/$level/round/$round/learn': typeof LevelLevelRoundRoundLearnRoute
-  '/level/$level/round/$round/pre': typeof LevelLevelRoundRoundPreRoute
   '/level/$level/round/$round/ready': typeof LevelLevelRoundRoundReadyRoute
   '/level/$level/round/$round/': typeof LevelLevelRoundRoundIndexRoute
   '/level/$level/round/$round/complete/$roundComplete': typeof LevelLevelRoundRoundCompleteRoundCompleteRoute
   '/level/$level/round/$round/headword/$headword': typeof LevelLevelRoundRoundHeadwordHeadwordRoute
   '/level/$level/round/$round/intro/$roundIntro': typeof LevelLevelRoundRoundIntroRoundIntroRoute
+  '/level/$level/round/$round/learn/$step': typeof LevelLevelRoundRoundLearnStepRoute
   '/level/$level/round/$round/letter/$letter': typeof LevelLevelRoundRoundLetterLetterRoute
   '/level/$level/round/$round/letters/$letters': typeof LevelLevelRoundRoundLettersLettersRoute
+  '/level/$level/round/$round/pre/$step': typeof LevelLevelRoundRoundPreStepRoute
   '/level/$level/round/$round/complete/': typeof LevelLevelRoundRoundCompleteIndexRoute
   '/level/$level/round/$round/headword/': typeof LevelLevelRoundRoundHeadwordIndexRoute
+  '/level/$level/round/$round/learn/': typeof LevelLevelRoundRoundLearnIndexRoute
   '/level/$level/round/$round/letter/': typeof LevelLevelRoundRoundLetterIndexRoute
   '/level/$level/round/$round/letters/': typeof LevelLevelRoundRoundLettersIndexRoute
+  '/level/$level/round/$round/pre/': typeof LevelLevelRoundRoundPreIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -213,19 +230,21 @@ export interface FileRoutesByTo {
   '/level/$level/complete/$levelComplete': typeof LevelLevelCompleteLevelCompleteRoute
   '/level/$level/intro/$levelIntro': typeof LevelLevelIntroLevelIntroRoute
   '/level/$level/complete': typeof LevelLevelCompleteIndexRoute
-  '/level/$level/round/$round/learn': typeof LevelLevelRoundRoundLearnRoute
-  '/level/$level/round/$round/pre': typeof LevelLevelRoundRoundPreRoute
   '/level/$level/round/$round/ready': typeof LevelLevelRoundRoundReadyRoute
   '/level/$level/round/$round': typeof LevelLevelRoundRoundIndexRoute
   '/level/$level/round/$round/complete/$roundComplete': typeof LevelLevelRoundRoundCompleteRoundCompleteRoute
   '/level/$level/round/$round/headword/$headword': typeof LevelLevelRoundRoundHeadwordHeadwordRoute
   '/level/$level/round/$round/intro/$roundIntro': typeof LevelLevelRoundRoundIntroRoundIntroRoute
+  '/level/$level/round/$round/learn/$step': typeof LevelLevelRoundRoundLearnStepRoute
   '/level/$level/round/$round/letter/$letter': typeof LevelLevelRoundRoundLetterLetterRoute
   '/level/$level/round/$round/letters/$letters': typeof LevelLevelRoundRoundLettersLettersRoute
+  '/level/$level/round/$round/pre/$step': typeof LevelLevelRoundRoundPreStepRoute
   '/level/$level/round/$round/complete': typeof LevelLevelRoundRoundCompleteIndexRoute
   '/level/$level/round/$round/headword': typeof LevelLevelRoundRoundHeadwordIndexRoute
+  '/level/$level/round/$round/learn': typeof LevelLevelRoundRoundLearnIndexRoute
   '/level/$level/round/$round/letter': typeof LevelLevelRoundRoundLetterIndexRoute
   '/level/$level/round/$round/letters': typeof LevelLevelRoundRoundLettersIndexRoute
+  '/level/$level/round/$round/pre': typeof LevelLevelRoundRoundPreIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -241,19 +260,21 @@ export interface FileRoutesById {
   '/level/$level/intro/$levelIntro': typeof LevelLevelIntroLevelIntroRoute
   '/level/$level/round/$round': typeof LevelLevelRoundRoundRouteWithChildren
   '/level/$level/complete/': typeof LevelLevelCompleteIndexRoute
-  '/level/$level/round/$round/learn': typeof LevelLevelRoundRoundLearnRoute
-  '/level/$level/round/$round/pre': typeof LevelLevelRoundRoundPreRoute
   '/level/$level/round/$round/ready': typeof LevelLevelRoundRoundReadyRoute
   '/level/$level/round/$round/': typeof LevelLevelRoundRoundIndexRoute
   '/level/$level/round/$round/complete/$roundComplete': typeof LevelLevelRoundRoundCompleteRoundCompleteRoute
   '/level/$level/round/$round/headword/$headword': typeof LevelLevelRoundRoundHeadwordHeadwordRoute
   '/level/$level/round/$round/intro/$roundIntro': typeof LevelLevelRoundRoundIntroRoundIntroRoute
+  '/level/$level/round/$round/learn/$step': typeof LevelLevelRoundRoundLearnStepRoute
   '/level/$level/round/$round/letter/$letter': typeof LevelLevelRoundRoundLetterLetterRoute
   '/level/$level/round/$round/letters/$letters': typeof LevelLevelRoundRoundLettersLettersRoute
+  '/level/$level/round/$round/pre/$step': typeof LevelLevelRoundRoundPreStepRoute
   '/level/$level/round/$round/complete/': typeof LevelLevelRoundRoundCompleteIndexRoute
   '/level/$level/round/$round/headword/': typeof LevelLevelRoundRoundHeadwordIndexRoute
+  '/level/$level/round/$round/learn/': typeof LevelLevelRoundRoundLearnIndexRoute
   '/level/$level/round/$round/letter/': typeof LevelLevelRoundRoundLetterIndexRoute
   '/level/$level/round/$round/letters/': typeof LevelLevelRoundRoundLettersIndexRoute
+  '/level/$level/round/$round/pre/': typeof LevelLevelRoundRoundPreIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -270,19 +291,21 @@ export interface FileRouteTypes {
     | '/level/$level/intro/$levelIntro'
     | '/level/$level/round/$round'
     | '/level/$level/complete/'
-    | '/level/$level/round/$round/learn'
-    | '/level/$level/round/$round/pre'
     | '/level/$level/round/$round/ready'
     | '/level/$level/round/$round/'
     | '/level/$level/round/$round/complete/$roundComplete'
     | '/level/$level/round/$round/headword/$headword'
     | '/level/$level/round/$round/intro/$roundIntro'
+    | '/level/$level/round/$round/learn/$step'
     | '/level/$level/round/$round/letter/$letter'
     | '/level/$level/round/$round/letters/$letters'
+    | '/level/$level/round/$round/pre/$step'
     | '/level/$level/round/$round/complete/'
     | '/level/$level/round/$round/headword/'
+    | '/level/$level/round/$round/learn/'
     | '/level/$level/round/$round/letter/'
     | '/level/$level/round/$round/letters/'
+    | '/level/$level/round/$round/pre/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -295,19 +318,21 @@ export interface FileRouteTypes {
     | '/level/$level/complete/$levelComplete'
     | '/level/$level/intro/$levelIntro'
     | '/level/$level/complete'
-    | '/level/$level/round/$round/learn'
-    | '/level/$level/round/$round/pre'
     | '/level/$level/round/$round/ready'
     | '/level/$level/round/$round'
     | '/level/$level/round/$round/complete/$roundComplete'
     | '/level/$level/round/$round/headword/$headword'
     | '/level/$level/round/$round/intro/$roundIntro'
+    | '/level/$level/round/$round/learn/$step'
     | '/level/$level/round/$round/letter/$letter'
     | '/level/$level/round/$round/letters/$letters'
+    | '/level/$level/round/$round/pre/$step'
     | '/level/$level/round/$round/complete'
     | '/level/$level/round/$round/headword'
+    | '/level/$level/round/$round/learn'
     | '/level/$level/round/$round/letter'
     | '/level/$level/round/$round/letters'
+    | '/level/$level/round/$round/pre'
   id:
     | '__root__'
     | '/'
@@ -322,19 +347,21 @@ export interface FileRouteTypes {
     | '/level/$level/intro/$levelIntro'
     | '/level/$level/round/$round'
     | '/level/$level/complete/'
-    | '/level/$level/round/$round/learn'
-    | '/level/$level/round/$round/pre'
     | '/level/$level/round/$round/ready'
     | '/level/$level/round/$round/'
     | '/level/$level/round/$round/complete/$roundComplete'
     | '/level/$level/round/$round/headword/$headword'
     | '/level/$level/round/$round/intro/$roundIntro'
+    | '/level/$level/round/$round/learn/$step'
     | '/level/$level/round/$round/letter/$letter'
     | '/level/$level/round/$round/letters/$letters'
+    | '/level/$level/round/$round/pre/$step'
     | '/level/$level/round/$round/complete/'
     | '/level/$level/round/$round/headword/'
+    | '/level/$level/round/$round/learn/'
     | '/level/$level/round/$round/letter/'
     | '/level/$level/round/$round/letters/'
+    | '/level/$level/round/$round/pre/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -440,20 +467,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LevelLevelRoundRoundIndexRouteImport
       parentRoute: typeof LevelLevelRoundRoundRoute
     }
-    '/level/$level/round/$round/learn': {
-      id: '/level/$level/round/$round/learn'
-      path: '/learn'
-      fullPath: '/level/$level/round/$round/learn'
-      preLoaderRoute: typeof LevelLevelRoundRoundLearnRouteImport
-      parentRoute: typeof LevelLevelRoundRoundRoute
-    }
-    '/level/$level/round/$round/pre': {
-      id: '/level/$level/round/$round/pre'
-      path: '/pre'
-      fullPath: '/level/$level/round/$round/pre'
-      preLoaderRoute: typeof LevelLevelRoundRoundPreRouteImport
-      parentRoute: typeof LevelLevelRoundRoundRoute
-    }
     '/level/$level/round/$round/ready': {
       id: '/level/$level/round/$round/ready'
       path: '/ready'
@@ -496,6 +509,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LevelLevelRoundRoundIntroRoundIntroRouteImport
       parentRoute: typeof LevelLevelRoundRoundRoute
     }
+    '/level/$level/round/$round/learn/': {
+      id: '/level/$level/round/$round/learn/'
+      path: '/learn'
+      fullPath: '/level/$level/round/$round/learn/'
+      preLoaderRoute: typeof LevelLevelRoundRoundLearnIndexRouteImport
+      parentRoute: typeof LevelLevelRoundRoundRoute
+    }
+    '/level/$level/round/$round/learn/$step': {
+      id: '/level/$level/round/$round/learn/$step'
+      path: '/learn/$step'
+      fullPath: '/level/$level/round/$round/learn/$step'
+      preLoaderRoute: typeof LevelLevelRoundRoundLearnStepRouteImport
+      parentRoute: typeof LevelLevelRoundRoundRoute
+    }
     '/level/$level/round/$round/letter/': {
       id: '/level/$level/round/$round/letter/'
       path: '/letter'
@@ -524,28 +551,42 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LevelLevelRoundRoundLettersLettersRouteImport
       parentRoute: typeof LevelLevelRoundRoundRoute
     }
+    '/level/$level/round/$round/pre/': {
+      id: '/level/$level/round/$round/pre/'
+      path: '/pre'
+      fullPath: '/level/$level/round/$round/pre/'
+      preLoaderRoute: typeof LevelLevelRoundRoundPreIndexRouteImport
+      parentRoute: typeof LevelLevelRoundRoundRoute
+    }
+    '/level/$level/round/$round/pre/$step': {
+      id: '/level/$level/round/$round/pre/$step'
+      path: '/pre/$step'
+      fullPath: '/level/$level/round/$round/pre/$step'
+      preLoaderRoute: typeof LevelLevelRoundRoundPreStepRouteImport
+      parentRoute: typeof LevelLevelRoundRoundRoute
+    }
   }
 }
 
 interface LevelLevelRoundRoundRouteChildren {
-  LevelLevelRoundRoundLearnRoute: typeof LevelLevelRoundRoundLearnRoute
-  LevelLevelRoundRoundPreRoute: typeof LevelLevelRoundRoundPreRoute
   LevelLevelRoundRoundReadyRoute: typeof LevelLevelRoundRoundReadyRoute
   LevelLevelRoundRoundIndexRoute: typeof LevelLevelRoundRoundIndexRoute
   LevelLevelRoundRoundCompleteRoundCompleteRoute: typeof LevelLevelRoundRoundCompleteRoundCompleteRoute
   LevelLevelRoundRoundHeadwordHeadwordRoute: typeof LevelLevelRoundRoundHeadwordHeadwordRoute
   LevelLevelRoundRoundIntroRoundIntroRoute: typeof LevelLevelRoundRoundIntroRoundIntroRoute
+  LevelLevelRoundRoundLearnStepRoute: typeof LevelLevelRoundRoundLearnStepRoute
   LevelLevelRoundRoundLetterLetterRoute: typeof LevelLevelRoundRoundLetterLetterRoute
   LevelLevelRoundRoundLettersLettersRoute: typeof LevelLevelRoundRoundLettersLettersRoute
+  LevelLevelRoundRoundPreStepRoute: typeof LevelLevelRoundRoundPreStepRoute
   LevelLevelRoundRoundCompleteIndexRoute: typeof LevelLevelRoundRoundCompleteIndexRoute
   LevelLevelRoundRoundHeadwordIndexRoute: typeof LevelLevelRoundRoundHeadwordIndexRoute
+  LevelLevelRoundRoundLearnIndexRoute: typeof LevelLevelRoundRoundLearnIndexRoute
   LevelLevelRoundRoundLetterIndexRoute: typeof LevelLevelRoundRoundLetterIndexRoute
   LevelLevelRoundRoundLettersIndexRoute: typeof LevelLevelRoundRoundLettersIndexRoute
+  LevelLevelRoundRoundPreIndexRoute: typeof LevelLevelRoundRoundPreIndexRoute
 }
 
 const LevelLevelRoundRoundRouteChildren: LevelLevelRoundRoundRouteChildren = {
-  LevelLevelRoundRoundLearnRoute: LevelLevelRoundRoundLearnRoute,
-  LevelLevelRoundRoundPreRoute: LevelLevelRoundRoundPreRoute,
   LevelLevelRoundRoundReadyRoute: LevelLevelRoundRoundReadyRoute,
   LevelLevelRoundRoundIndexRoute: LevelLevelRoundRoundIndexRoute,
   LevelLevelRoundRoundCompleteRoundCompleteRoute:
@@ -554,15 +595,19 @@ const LevelLevelRoundRoundRouteChildren: LevelLevelRoundRoundRouteChildren = {
     LevelLevelRoundRoundHeadwordHeadwordRoute,
   LevelLevelRoundRoundIntroRoundIntroRoute:
     LevelLevelRoundRoundIntroRoundIntroRoute,
+  LevelLevelRoundRoundLearnStepRoute: LevelLevelRoundRoundLearnStepRoute,
   LevelLevelRoundRoundLetterLetterRoute: LevelLevelRoundRoundLetterLetterRoute,
   LevelLevelRoundRoundLettersLettersRoute:
     LevelLevelRoundRoundLettersLettersRoute,
+  LevelLevelRoundRoundPreStepRoute: LevelLevelRoundRoundPreStepRoute,
   LevelLevelRoundRoundCompleteIndexRoute:
     LevelLevelRoundRoundCompleteIndexRoute,
   LevelLevelRoundRoundHeadwordIndexRoute:
     LevelLevelRoundRoundHeadwordIndexRoute,
+  LevelLevelRoundRoundLearnIndexRoute: LevelLevelRoundRoundLearnIndexRoute,
   LevelLevelRoundRoundLetterIndexRoute: LevelLevelRoundRoundLetterIndexRoute,
   LevelLevelRoundRoundLettersIndexRoute: LevelLevelRoundRoundLettersIndexRoute,
+  LevelLevelRoundRoundPreIndexRoute: LevelLevelRoundRoundPreIndexRoute,
 }
 
 const LevelLevelRoundRoundRouteWithChildren =

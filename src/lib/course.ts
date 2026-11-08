@@ -5,7 +5,7 @@ import { jamos as jamosData } from '@/data/jamos'
 import { romanizations } from '@/data/romanizations'
 import { shapes } from '@/data/shapes'
 import { words as wordsData } from '@/data/words'
-import type { CourseData, Jamo, Level, Round, Word } from '@/data/types'
+import type { Jamo, Level, Round, Word } from '@/data/types'
 import { extractLevels, extractRounds } from './text'
 
 function indexBy<T>(items: T[], key: (item: T) => string): Record<string, T> {
@@ -53,16 +53,6 @@ export function getRomanizationRules() {
 
 export function getCredits() {
   return credits
-}
-
-/** Everything a round screen may need, in the shape the components expect. */
-export function getRoundBundle(): Pick<CourseData, 'jamos' | 'shapes' | 'words' | 'geometric'> {
-  return {
-    jamos: getJamos(),
-    shapes: getShapes(),
-    words: getWords(),
-    geometric: getGeometric(),
-  }
 }
 
 export { courseData }

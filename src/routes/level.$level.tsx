@@ -3,7 +3,6 @@ import { Logo } from '@/components/logo'
 import { YouAreHere } from '@/components/you-are-here'
 import { getLevelBundle } from '@/lib/course'
 import { LevelDataProvider } from '@/providers/course-context'
-import { SessionProvider } from '@/providers/session-store'
 import { cn } from '@/lib/utils'
 
 export const Route = createFileRoute('/level/$level')({
@@ -42,9 +41,7 @@ function LevelLayout() {
         />
 
         <LevelDataProvider value={bundle}>
-          <SessionProvider rounds={bundle.rounds} jamos={bundle.jamos} words={bundle.words}>
-            <Outlet />
-          </SessionProvider>
+          <Outlet />
         </LevelDataProvider>
       </div>
     </div>

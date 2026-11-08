@@ -22,6 +22,7 @@ export interface RouteParams {
   headword?: string
   roundComplete?: string
   levelComplete?: string
+  step?: string
 }
 
 const LevelDataContext = createContext<LevelBundle | null>(null)

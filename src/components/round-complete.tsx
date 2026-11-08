@@ -9,7 +9,7 @@ import type { Jamo, Level, Round } from "@/data/types";
 import { formatSeconds, getJamoHint } from "@/lib/display";
 import { isMedial } from "@/lib/hangul";
 import { keyMap } from "@/lib/collections";
-import { useSession } from "@/providers/session-store";
+import { readStats } from '@/lib/stats'
 import { cn } from "@/lib/utils";
 
 interface RoundCompleteProps {
@@ -36,10 +36,10 @@ export function RoundComplete({
   step,
 }: RoundCompleteProps) {
   const navigate = useNavigate();
-  const { session } = useSession();
 
   const levelParam = String(level.level);
   const roundParam = String(round.round);
+  const stats = readStats(`${levelParam}.${roundParam}`);
   const showingLetters = step === "letters";
   const showingReview = step === "review";
   const newJamos = round.jamo ?? [];
@@ -135,7 +135,8 @@ export function RoundComplete({
     );
   }
 
-  const elapsed = Math.round((session.completed - session.started) / 1000);
+  const finishedAt = stats?.completed || Date.now()
+  const elapsed = stats?.started ? Math.max(0, Math.round((finishedAt - stats.started) / 1000)) : 0;
 
   return (
     <div className="round__complete radial w-[1000px] desktop:-ml-[50px] desktop:h-[600px] phone:w-auto">
@@ -167,7 +168,7 @@ export function RoundComplete({
         className="round__complete__words left-[54%] text-[1.5rem] -translate-x-[0%] -translate-y-[105%] sm-desktop:translate-x-[60%] sm-desktop:-translate-y-[135%] tablet:-translate-x-[180%] tablet:-translate-y-[105%] phone:top-[280px] phone:left-1/2 phone:-translate-x-[85%] phone:-translate-y-[39%]"
         circle="h-[4.05rem] w-[4.05rem]"
         label="Words Read"
-        value={session.words.length}
+        value={stats?.words ?? 0}
       />
 
       <Stat
@@ -182,7 +183,7 @@ export function RoundComplete({
         className="round__complete__peeks left-[54%] text-[1.1111rem] translate-x-[140%] translate-y-[67%] sm-desktop:-translate-x-[140%] sm-desktop:translate-y-[110%] tablet:translate-x-[20%] tablet:translate-y-[35%] phone:top-[280px] phone:left-1/2 phone:translate-x-[60%] phone:translate-y-[53%]"
         circle="h-[2.6111rem] w-[2.6111rem]"
         label="Peeks"
-        value={session.peeks.length}
+        value={stats?.peeks ?? 0}
         negative
         labelClassName="top-0"
       />
@@ -191,7 +192,7 @@ export function RoundComplete({
         className="round__complete__misses left-[54%] text-[0.8888rem] translate-x-[320%] -translate-y-[105%] sm-desktop:-translate-x-[390%] sm-desktop:translate-y-[115%] tablet:-translate-x-[147%] tablet:translate-y-[12%] phone:top-[280px] phone:left-1/2 phone:-translate-x-[52%] phone:translate-y-[171%]"
         circle="h-[2.1111rem] w-[2.1111rem]"
         label="Misses"
-        value={session.totalMisses}
+        value={stats?.misses ?? 0}
         negative
         labelClassName="-top-[2px] -left-[33px]"
       />

@@ -4,7 +4,7 @@ import { BackForwardButtons } from '@/components/back-forward-buttons'
 import { Circle } from '@/components/circle'
 import { Markdown } from '@/components/markdown'
 import type { Level, Round } from '@/data/types'
-import { useSession } from '@/providers/session-store'
+import { useSession } from '@/hooks/use-session'
 import { useNavigate } from '@tanstack/react-router'
 
 interface RoundReadyProps {
