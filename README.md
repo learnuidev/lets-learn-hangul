@@ -2,76 +2,176 @@
 
 Interactive lessons that teach you to read Hangul, the Korean alphabet, in about an hour.
 
-Originally written in 2016 as a React 15 + Baobab + Express + Gulp app. This is a
-complete port to a modern stack — same content, same lesson flow, same visual design.
+Originally written in 2016 as a React 15 + Baobab + Express + Gulp app (still in the git
+history). This is a full port to a modern stack — same content, same lesson flow, same
+visual design.
 
-## Stack
+---
 
-| Concern     | Choice                                                        |
-| ----------- | ------------------------------------------------------------- |
-| Framework   | [TanStack Start](https://tanstack.com/start) (SSR + server routes) |
-| Routing     | [TanStack Router](https://tanstack.com/router) — file-based routes |
-| UI          | [shadcn/ui](https://ui.shadcn.com) primitives + Radix          |
-| Styling     | [Tailwind CSS v4](https://tailwindcss.com) with a custom theme |
-| Animation   | [Motion](https://motion.dev) (springs) + CSS transitions       |
-| Audio       | [Howler](https://howlerjs.com)                                 |
-| Markdown    | react-markdown + remark-gfm + remark-breaks + rehype-raw       |
+## Quick start (development)
 
-## Getting started
+Requires **Node 22+**.
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
+npm run dev
 ```
 
-Other scripts:
+Then open **<http://localhost:3001>**.
 
-```bash
-npm run build      # production build into dist/
-npm start          # serve the production build
-npm run typecheck  # tsc --noEmit
+The dev server prints the URL on start; if 3001 is taken Vite picks the next free port.
+Hot module replacement is on, and `src/routeTree.gen.ts` is regenerated automatically
+whenever you add, move or rename a file in `src/routes/`.
+
+### All scripts
+
+| Script              | What it does                                                        |
+| ------------------- | ------------------------------------------------------------------- |
+| `npm run dev`       | Vite dev server with SSR + HMR on port 3001                          |
+| `npm run build`     | Production build into `dist/` (`dist/client` + `dist/server`)         |
+| `npm start`         | **Production server**: `server.mjs` serves the SSR handler plus the static client build (defaults to port 3000; use `PORT=… npm start` to change) |
+| `npm run preview`   | `vite preview` — static client build only, **no SSR**; use `npm start` to check real behaviour |
+| `npm run typecheck` | `tsc --noEmit` over the whole project                                |
+
+---
+
+## Stack
+
+| Concern        | Choice                                                                 |
+| -------------- | ---------------------------------------------------------------------- |
+| Framework      | [TanStack Start](https://tanstack.com/start) 1.x — SSR, streaming, server entry |
+| Routing        | [TanStack Router](https://tanstack.com/router) — file-based, fully typed routes |
+| UI primitives  | [shadcn/ui](https://ui.shadcn.com) components on Radix (`button`, `badge`, `input`, `tooltip`, `dialog`) |
+| Styling        | [Tailwind CSS v4](https://tailwindcss.com) with a custom `@theme`       |
+| Animation      | Plain **CSS keyframes** + CSS transitions (no animation library)       |
+| Audio          | [Howler](https://howlerjs.com), loaded lazily on first interaction     |
+| Markdown       | react-markdown + remark-gfm + remark-breaks + rehype-raw                |
+| Prod server    | [srvx](https://srvx.h3.dev) serving the Start handler + static assets   |
+
+---
+
+## Architecture
+
+### Rendering & data flow
+
+Every page is **server-rendered** and then hydrated. Course content is static module data
+(`src/data/*.ts`), so it is resolved in route loaders / `beforeLoad` rather than fetched
+over the network:
+
+- `src/routes/__root.tsx` — root loader returns `{ levels, rounds, geometric }`; renders the
+  document shell, providers and the app chrome (constellation, footer, course index).
+- `src/routes/level.$level.tsx` — `beforeLoad({ params })` returns the level bundle
+  (`level`, `levels`, `rounds`, `shapes`, `jamos`, `words`, `geometric`) which all child
+  routes read. This mirrors what the old Express server exposed at `/data/*.json`, but
+  without a round trip.
+- Markdown slides are split on `---` by `processText()` in `src/lib/text.ts`, exactly like
+  the original server did.
+
+### State
+
+There is no global store library. Three React contexts cover the app:
+
+| Provider | File | Responsibility |
+| -------- | ---- | -------------- |
+| `UserProvider` | `src/providers/user-store.tsx` | Saved progress + hints in `localStorage` (`lets-learn-hangul`), event history, and whether the course index overlay is open |
+| `SessionProvider` | `src/providers/session-store.tsx` | The two state machines: the warm-up letter quiz (`presession`) and the typing session (`session`) — queue, current word, misses, peeks, timing |
+| `LevelDataProvider` | `src/providers/course-context.tsx` | The level bundle from `beforeLoad` plus typed access to the current route params, so any round screen can call `useRoundData()` |
+
+Session state lives for as long as the level layout is mounted, so navigating between a
+round's screens keeps the session intact.
+
+### Routes
+
+URLs are identical to the 2016 site:
+
+```
+/                                  landing
+/return                            "welcome back" prompt
+/level/$level                      level intro ( + /intro/$levelIntro )
+/level/$level/complete             level complete ( + /complete/$levelComplete )
+/level/$level/round/$round         round intro ( + /intro/$roundIntro )
+        …/letters                  letters overview ( + /letters/$letters )
+        …/letter                   one letter at a time ( + /letter/$letter )
+        …/headword                 round keyword ( + /headword/$headword )
+        …/pre                      warm-up quiz
+        …/ready                    "Ready?" screen that starts the session
+        …/learn                    typing exercise (guarded: needs an active session)
+        …/complete                 round summary ( + /complete/review, /complete/letters )
+/learnedemall                      "you learned all 40 letters" milestone
+/learnedeverything                 finale counter
+/nowwhat                           share + further resources
+/credits                           audio and photo credits
 ```
 
-Requires Node 22+.
+`src/routeTree.gen.ts` is generated by the TanStack Start plugin (on `dev`/`build`) and is
+committed so `npm run typecheck` works on a fresh clone.
+
+### Styling & animation
+
+`src/styles/app.css` holds the design system:
+
+- **Theme** — palette (`--color-butter`, `--color-brand-red`, …), font stacks and the
+  `--radius-bubble` token, all carried over from the original `_colors.scss`.
+- **Root font-size is `36px`** (`27px` on phones), which is why layout values are written in
+  the original `rem`/`px` units instead of Tailwind’s spacing scale.
+- **Breakpoints are declared in `px`** (`phone`, `tablet`, `wide`, `sm-desktop`, `desktop`)
+  because rem-based media queries would scale with that 36px root.
+- **`.radial`** is the ported Sass mixin: a relative box whose children are absolutely
+  centred. It sets the individual `translate` property (not `transform`) so per-screen
+  `translate-*` utilities override it the way the original `transform` rules did.
+- **Transitions animate `translate`, `scale` and `opacity`**, never `transform` — Tailwind v4
+  emits those as individual CSS properties, so `transition-transform` would silently do
+  nothing. The shared “swipe up + fade” interaction (level/round indicator, logo, jamo
+  table) uses `transition-[translate_200ms_ease-out,opacity_100ms_ease-in]`.
+- **Entry animations are CSS keyframes** (`pop-in`, `pop-in-soft`, with a per-element
+  `--pop-from` and `animation-delay`) because an animation runs exactly once per inserted
+  element and cannot be restarted by a re-render.
+- `scrollbar-gutter: stable` on `html` keeps the fixed header from shifting when an overlay
+  opens.
+
+### Assets
+
+Everything the app serves at runtime lives in `public/` and is copied into `dist/client` by
+the build: `audio/` (word and jamo clips plus `sprite.mp3` for the correct/wrong effects),
+`images/`, `sounds/` and `favicon.ico`.
+
+---
 
 ## Project layout
 
 ```
 src/
-├── routes/            # file-based routes (URLs mirror the original site)
-│   ├── __root.tsx     # document shell, providers, app chrome
-│   ├── index.tsx      # landing
-│   ├── level.$level.* # level intro, round branch, level complete
-│   ├── learnedemall.tsx / learnedeverything.tsx / nowwhat.tsx / credits.tsx
-├── components/        # screens (landing, round-*, learned-*) and visuals
-│   └── ui/            # shadcn/ui primitives (button, badge, input, tooltip, dialog)
-├── providers/
-│   ├── user-store.tsx     # saved progress + hints (localStorage) and course index
-│   ├── session-store.tsx  # the learn/warm-up session state machines
-│   └── course-context.tsx # level bundle + route params for round screens
-├── lib/               # hangul, romanization, display ids, sound, markdown, helpers
-├── data/              # typed course content (course, jamos, words, shapes, …)
-└── styles/app.css     # Tailwind theme, base typography, shared component classes
+├── routes/                 # file-based routes; URLs match the original site
+│   ├── __root.tsx          # document shell, providers, app chrome
+│   ├── level.$level.*      # level intro, round branch, level complete
+│   └── learnedemall.tsx / learnedeverything.tsx / nowwhat.tsx / credits.tsx
+├── components/
+│   ├── ui/                 # shadcn/ui primitives
+│   └── *.tsx               # screens (landing, round-*, learned-*) and visuals
+├── providers/              # user store, session state machines, level context
+├── lib/                    # hangul, romanization, display ids, sound, markdown, helpers
+├── data/                   # typed course content + shared data types
+├── hooks/                  # global Enter-to-activate handler
+└── styles/
+    ├── app.css             # Tailwind theme, base typography, shared component classes
+    └── data-uris.css       # arrow glyphs and social logos from the 2016 stylesheet
+server.mjs                  # production entry (srvx + static client build)
 ```
 
-## Notes on the port
+---
 
-- **Design tokens** live in the `@theme` block of `src/styles/app.css`
-  (`--color-butter`, `--color-brand-red`, `--radius-bubble`, …). The document root
-  is `36px` (`27px` on phones), which is why layout values are written in the
-  original `rem`/`px` units rather than Tailwind's spacing scale.
-- **Breakpoints** are declared in `px` on purpose (`phone`, `tablet`, `wide`,
-  `sm-desktop`, `desktop`) — rem-based media queries would scale with that 36px root.
-- **Centring** uses the `.radial` component class, which sets the individual
-  `translate` property so Tailwind's `translate-*` utilities override it per screen.
-  For the same reason, hover/enter transitions animate `translate`, `scale` and
-  `opacity` (not `transform`), since Tailwind v4 emits individual properties.
-- **Progress and hints** persist to `localStorage` under `lets-learn-hangul`, and a
-  global Enter-key handler still activates the screen's `[data-autofocus]` action.
-- **Data** is static module content, resolved in route loaders/`beforeLoad` so pages
-  render on the server.
+## Behaviour notes
+
+- Progress is stored in `localStorage` under `lets-learn-hangul` and read after mount, so the
+  server and client markup stay identical.
+- Pressing <kbd>Enter</kbd> anywhere triggers the screen's primary action
+  (`[data-autofocus]`), as in the original app.
+- Romanization accepts every valid reading of a word; after three misses on the same word the
+  answer is revealed and the word is re-queued (`src/lib/romanize.ts`,
+  `src/lib/validation.ts`).
+- Audio is only initialised after the first interaction, so nothing is downloaded on load.
 
 ## Credits
 
 Written, designed and built by [Noah Burney](http://noahburney.net).
-Pronunciations from [Forvo](http://forvo.com); see `/credits` for the full list.
+Pronunciations from [Forvo](http://forvo.com) — the full attribution list is on `/credits`.
