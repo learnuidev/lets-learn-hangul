@@ -27,7 +27,12 @@ export function CourseIndex({ levels, rounds }: CourseIndexProps) {
         <DialogTitle className="sr-only">Course index</DialogTitle>
 
         <button
-          className="course-index__close absolute top-[12px] right-[4px] block rounded-[3px] bg-transparent text-[1.1666rem] leading-none font-light text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/40 phone:top-0 phone:right-[8px]"
+          className={cn(
+            'course-index__close absolute top-[34px] right-[24px] block rounded-[3px] bg-transparent',
+            'text-[1.1666rem] leading-none font-light text-ink opacity-80 outline-none',
+            'transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-brand-blue/40',
+            'phone:top-0 phone:right-[8px]',
+          )}
           onClick={hideIndex}
           aria-label="Close course index"
         >
