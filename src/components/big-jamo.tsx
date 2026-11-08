@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import type { CSSProperties } from 'react'
 import { getShapeID } from '@/lib/display'
 import { cn } from '@/lib/utils'
 
@@ -12,18 +12,25 @@ interface BigJamoProps {
 }
 
 /** One jamo drawn at display size from the shape path set. */
-export function BigJamo({ shapes, jamo, className, pop, popScale = 0 }: BigJamoProps) {
+export function BigJamo({ shapes, jamo, className, pop, popScale }: BigJamoProps) {
   const animate = pop !== undefined && pop !== false
+  const soft = (popScale ?? 0) > 0
+
   return (
-    <motion.svg
+    <svg
       viewBox="0 0 600 600"
-      className={cn('big-jamo [&_path]:fill-ink', className)}
+      className={cn('big-jamo [&_path]:fill-ink', animate && (soft ? 'pop-in-soft' : 'pop-in'), className)}
       aria-hidden="true"
-      initial={animate ? { scale: popScale } : false}
-      animate={animate ? { scale: 1 } : undefined}
-      transition={animate ? { type: 'spring', bounce: 0.35, duration: 0.6, delay: pop } : undefined}
+      style={
+        animate
+          ? {
+              ...(soft ? ({ '--pop-from': String(popScale) } as CSSProperties) : null),
+              animationDelay: pop ? `${pop}s` : undefined,
+            }
+          : undefined
+      }
     >
       <path d={shapes[getShapeID(jamo)] || ''} />
-    </motion.svg>
+    </svg>
   )
 }

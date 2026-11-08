@@ -17,15 +17,16 @@ interface JamoTableProps {
   jamos: Record<string, Jamo>
   known?: Record<string, boolean>
   newJamos?: string[]
+  className?: string
 }
 
 /**
  * The full 40-letter grid revealed at the end of a round: dim for letters the
  * learner has not met, highlighted for the ones just learned.
  */
-export function JamoTable({ geometric, jamos, known = {}, newJamos = [] }: JamoTableProps) {
+export function JamoTable({ geometric, jamos, known = {}, newJamos = [], className }: JamoTableProps) {
   return (
-    <div className="jamo-table flex w-[1000px] flex-wrap phone:w-full">
+    <div className={cn('jamo-table flex w-[1000px] flex-wrap phone:w-full', className)}>
       {table.map((jamo) => {
         const isNew = newJamos.includes(jamo)
         return (
@@ -33,7 +34,7 @@ export function JamoTable({ geometric, jamos, known = {}, newJamos = [] }: JamoT
             type="button"
             key={jamo}
             className={cn(
-              'jamo-table__jamo group/jamo relative block h-[100px] w-[100px] cursor-pointer bg-transparent p-0 leading-none phone:h-[2rem] phone:w-[20%]',
+              'jamo-table__jamo group/jamo relative flex h-[100px] w-[100px] cursor-pointer items-center justify-center bg-transparent p-0 phone:h-[2rem] phone:w-[20%]',
               !known[jamo] && 'jamo-table__jamo--unknown opacity-10',
               isNew && [
                 'jamo-table__jamo--new',
@@ -58,7 +59,7 @@ export function JamoTable({ geometric, jamos, known = {}, newJamos = [] }: JamoT
             <GeometricJamo
               jamo={jamo}
               geometric={geometric}
-              className="relative top-[20px] left-[20px] z-5 h-[60px] w-[60px] transition-opacity phone:top-[0.4rem] phone:left-[20%] phone:h-[1.2rem] phone:w-[60%] group-hover/jamo:opacity-0 group-[.touched]/jamo:opacity-0"
+              className="relative z-5 h-[60px] w-[60px] transition-opacity phone:h-[1.2rem] phone:w-[60%] group-hover/jamo:opacity-0 group-[.touched]/jamo:opacity-0"
             />
             <span
               className={cn(

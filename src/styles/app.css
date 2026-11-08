@@ -368,6 +368,54 @@
     }
   }
 
+  /*
+   * Entry animations are plain CSS keyframes: an animation runs once when the
+   * element is inserted and cannot be restarted by a re-render, which a JS
+   * animation library can do (and did — the circle popped twice when moving
+   * between two slides of the same screen).
+   */
+  @keyframes pop-in {
+    0% {
+      scale: 0;
+    }
+    55% {
+      scale: 1.08;
+    }
+    78% {
+      scale: 0.985;
+    }
+    100% {
+      scale: 1;
+    }
+  }
+
+  @keyframes pop-in-soft {
+    0% {
+      scale: var(--pop-from, 0.55);
+    }
+    62% {
+      scale: 1.035;
+    }
+    100% {
+      scale: 1;
+    }
+  }
+
+  .pop-in {
+    animation: pop-in 0.6s cubic-bezier(0.22, 0.9, 0.35, 1) both;
+  }
+
+  .pop-in-soft {
+    animation: pop-in-soft 0.6s cubic-bezier(0.22, 0.9, 0.35, 1) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pop-in,
+    .pop-in-soft {
+      animation-duration: 0.001s;
+    }
+  }
+
   @keyframes scale-in {
     0% {
       transform: scale(0);

@@ -35,7 +35,11 @@ function LevelLayout() {
             (learning || roundComplete) && 'phone:hidden',
           )}
         />
-        <YouAreHere level={params.level} round={params.round} />
+        <YouAreHere
+          level={params.level}
+          round={params.round}
+          className={cn(roundComplete && 'phone:hidden')}
+        />
 
         <LevelDataProvider value={bundle}>
           <SessionProvider rounds={bundle.rounds} jamos={bundle.jamos} words={bundle.words}>

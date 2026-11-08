@@ -1,10 +1,12 @@
 import { Badge } from '@/components/ui/badge'
 import { SmallWord } from '@/components/small-word'
 import { useUser } from '@/providers/user-store'
+import { cn } from '@/lib/utils'
 
 interface YouAreHereProps {
   level?: string
   round?: string
+  className?: string
 }
 
 const itemClass = 'group/item absolute block top-[0.5555rem] h-[1.52rem] phone:top-[8px]'
@@ -16,12 +18,15 @@ const wordClass = `absolute block translate-y-0 opacity-100 group-hover/item:-tr
 const labelClass = `absolute top-[0.2222rem] left-[1.1111rem] translate-y-[16px] text-[0.58rem] font-black uppercase text-ink opacity-0 group-hover/item:translate-y-0 group-hover/item:opacity-100 ${swipe}`
 
 /** Level / round indicator; clicking it opens the course index. */
-export function YouAreHere({ level, round }: YouAreHereProps) {
+export function YouAreHere({ level, round, className }: YouAreHereProps) {
   const { toggleIndex } = useUser()
 
   return (
     <div
-      className="you-are-here absolute top-0 left-full z-10 -ml-[140px] cursor-pointer text-center text-[14px] font-extrabold phone:-ml-[91px]"
+      className={cn(
+        'you-are-here absolute top-0 left-full z-10 -ml-[140px] cursor-pointer text-center text-[14px] font-extrabold phone:-ml-[91px]',
+        className,
+      )}
       onClick={toggleIndex}
     >
       <span className={`you-are-here__level left-[-2.7777rem] w-[2.5rem] phone:left-[-2.5rem] ${itemClass}`}>

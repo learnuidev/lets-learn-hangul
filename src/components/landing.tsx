@@ -1,4 +1,3 @@
-import { motion } from 'motion/react'
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { LandingBrushTitle } from '@/components/landing-brush-title'
@@ -17,12 +16,7 @@ export function Landing() {
 
   return (
     <div className="landing radial phone:[&>*]:top-[300px]">
-      <motion.div
-        className="landing__circle h-[11.6666rem] w-[11.6666rem] rounded-[600px] bg-white phone:h-[8rem] phone:w-[8rem] phone:-translate-x-1/2 phone:-translate-y-[8rem]"
-        initial={{ scale: 0.6 }}
-        animate={{ scale: 1 }}
-        transition={{ type: 'spring', bounce: 0.35, duration: 0.6 }}
-      />
+      <div className="landing__circle pop-in-soft h-[11.6666rem] w-[11.6666rem] rounded-[600px] bg-white phone:h-[8rem] phone:w-[8rem] phone:-translate-x-1/2 phone:-translate-y-[8rem]" />
 
       <LandingBrushTitle className="landing__brush-title -translate-x-full -translate-y-[62%] phone:h-[7rem] phone:w-[7rem] phone:-translate-x-[103%] phone:-translate-y-[8.25rem]" />
 

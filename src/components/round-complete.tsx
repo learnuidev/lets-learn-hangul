@@ -1,26 +1,25 @@
-import { motion } from 'motion/react'
-import { useNavigate } from '@tanstack/react-router'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { BackForwardButtons } from '@/components/back-forward-buttons'
-import { BigJamo } from '@/components/big-jamo'
-import { Circle } from '@/components/circle'
-import { JamoTable } from '@/components/jamo-table'
-import type { Jamo, Level, Round } from '@/data/types'
-import { formatSeconds, getJamoHint } from '@/lib/display'
-import { isMedial } from '@/lib/hangul'
-import { keyMap } from '@/lib/collections'
-import { useSession } from '@/providers/session-store'
-import { cn } from '@/lib/utils'
+import { useNavigate } from "@tanstack/react-router";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { BackForwardButtons } from "@/components/back-forward-buttons";
+import { BigJamo } from "@/components/big-jamo";
+import { Circle } from "@/components/circle";
+import { JamoTable } from "@/components/jamo-table";
+import type { Jamo, Level, Round } from "@/data/types";
+import { formatSeconds, getJamoHint } from "@/lib/display";
+import { isMedial } from "@/lib/hangul";
+import { keyMap } from "@/lib/collections";
+import { useSession } from "@/providers/session-store";
+import { cn } from "@/lib/utils";
 
 interface RoundCompleteProps {
-  level: Level
-  round: Round
-  rounds: Record<string, Round>
-  shapes: Record<string, string>
-  jamos: Record<string, Jamo>
-  geometric: Record<string, string>
-  step?: string
+  level: Level;
+  round: Round;
+  rounds: Record<string, Round>;
+  shapes: Record<string, string>;
+  jamos: Record<string, Jamo>;
+  geometric: Record<string, string>;
+  step?: string;
 }
 
 /**
@@ -36,59 +35,69 @@ export function RoundComplete({
   geometric,
   step,
 }: RoundCompleteProps) {
-  const navigate = useNavigate()
-  const { session } = useSession()
+  const navigate = useNavigate();
+  const { session } = useSession();
 
-  const levelParam = String(level.level)
-  const roundParam = String(round.round)
-  const showingLetters = step === 'letters'
-  const showingReview = step === 'review'
-  const newJamos = round.jamo ?? []
+  const levelParam = String(level.level);
+  const roundParam = String(round.round);
+  const showingLetters = step === "letters";
+  const showingReview = step === "review";
+  const newJamos = round.jamo ?? [];
 
-  const nextRound = rounds[`${levelParam}.${Number(roundParam) + 1}`]
+  const nextRound = rounds[`${levelParam}.${Number(roundParam) + 1}`];
 
-  const current = parseFloat(`${levelParam}.${roundParam}`)
+  const current = parseFloat(`${levelParam}.${roundParam}`);
   const known = keyMap(
     Object.entries(rounds)
       .filter(([key]) => parseFloat(key) <= current)
       .flatMap(([, value]) => value.jamo ?? []),
-  )
+  );
 
   const goOn = () => {
     if (newJamos.length && !showingLetters && !showingReview) {
       navigate({
-        to: '/level/$level/round/$round/complete/$roundComplete',
-        params: { level: levelParam, round: roundParam, roundComplete: 'review' },
-      })
+        to: "/level/$level/round/$round/complete/$roundComplete",
+        params: {
+          level: levelParam,
+          round: roundParam,
+          roundComplete: "review",
+        },
+      });
     } else if (newJamos.length && showingReview) {
       navigate({
-        to: '/level/$level/round/$round/complete/$roundComplete',
-        params: { level: levelParam, round: roundParam, roundComplete: 'letters' },
-      })
+        to: "/level/$level/round/$round/complete/$roundComplete",
+        params: {
+          level: levelParam,
+          round: roundParam,
+          roundComplete: "letters",
+        },
+      });
     } else if (nextRound) {
       navigate({
-        to: '/level/$level/round/$round',
+        to: "/level/$level/round/$round",
         params: { level: levelParam, round: String(nextRound.round) },
-      })
+      });
     } else {
-      navigate({ to: '/level/$level/complete', params: { level: levelParam } })
+      navigate({ to: "/level/$level/complete", params: { level: levelParam } });
     }
-  }
+  };
 
   if (showingLetters || showingReview) {
     return (
       <div className="round__complete radial w-[1000px] desktop:-ml-[50px] desktop:h-[600px] phone:w-auto">
-        <div className="round__complete__top absolute top-[40px] left-1/2 -ml-[463px] [@media(max-width:1275px)]:-ml-[355px] tablet:top-[-130px] tablet:left-0 tablet:ml-0 phone:top-[1rem] phone:left-[1rem] phone:ml-0">
-          <label className="relative z-5 mb-0 text-brand-blue">Round Complete!</label>
+        <div className="round__complete__top absolute top-[40px] left-1/2 -ml-[463px] [translate:none] wide:max-[1275px]:-ml-[355px] tablet:top-[-130px] tablet:left-0 tablet:ml-0 phone:top-[1rem] phone:left-[1rem] phone:ml-0">
+          <label className="relative z-5 mb-0 text-brand-blue">
+            Round Complete!
+          </label>
           {showingReview ? (
             <p className="relative z-5">
-              You’ve learned&nbsp;{' '}
+              You’ve learned&nbsp;{" "}
               {newJamos.length > 1 ? (
                 <span>
                   <b>{newJamos.length}</b> new Hangul letters!
                 </span>
               ) : (
-                'a new Hangul letter!'
+                "a new Hangul letter!"
               )}
             </p>
           ) : (
@@ -109,23 +118,24 @@ export function RoundComplete({
           </Button>
         </BackForwardButtons>
 
-        <div className="transition-group block w-full">
+        <div className="transition-group block w-full mt-1">
           {showingLetters ? (
             <JamoTable
               geometric={geometric}
               jamos={jamos}
               newJamos={newJamos}
               known={known}
+              className="mt-[20px] tablet:-mt-[220px] phone:mt-[110px]"
             />
           ) : (
             <Review round={round} shapes={shapes} />
           )}
         </div>
       </div>
-    )
+    );
   }
 
-  const elapsed = Math.round((session.completed - session.started) / 1000)
+  const elapsed = Math.round((session.completed - session.started) / 1000);
 
   return (
     <div className="round__complete radial w-[1000px] desktop:-ml-[50px] desktop:h-[600px] phone:w-auto">
@@ -144,7 +154,9 @@ export function RoundComplete({
           alt=""
         />
         <div className="relative z-1 pt-[98px] pl-[149px] phone:pt-[49px] phone:pl-[90px]">
-          <h1 className="m-0 text-[1rem] leading-[1rem] uppercase text-brand-blue">Round Complete!</h1>
+          <h1 className="m-0 text-[1rem] leading-[1rem] uppercase text-brand-blue">
+            Round Complete!
+          </h1>
           <h2 className="m-0 -ml-[0.19rem] text-[1rem] leading-[1rem] font-semibold whitespace-nowrap uppercase">
             ‘{round.name}’
           </h2>
@@ -195,7 +207,7 @@ export function RoundComplete({
         </Button>
       </BackForwardButtons>
     </div>
-  )
+  );
 }
 
 function Stat({
@@ -206,38 +218,44 @@ function Stat({
   negative,
   labelClassName,
 }: {
-  className?: string
-  circle: string
-  label: string
-  value: number | string
-  negative?: boolean
-  labelClassName?: string
+  className?: string;
+  circle: string;
+  label: string;
+  value: number | string;
+  negative?: boolean;
+  labelClassName?: string;
 }) {
   return (
-    <div className={cn('absolute', className)}>
+    <div className={cn("absolute", className)}>
       <Circle className={circle} pop={0.1} popScale={0.5} />
-      <label className={cn('absolute top-[11px] -left-[20px]', labelClassName)}>{label}</label>
+      <label className={cn("absolute top-[11px] -left-[20px]", labelClassName)}>
+        {label}
+      </label>
       <div
         className={cn(
-          'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-[1em] leading-[1em] font-black',
-          negative ? 'text-brand-red' : 'text-brand-blue',
+          "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-[1em] leading-[1em] font-black",
+          negative ? "text-brand-red" : "text-brand-blue",
         )}
       >
         {value}
       </div>
     </div>
-  )
+  );
 }
 
-function Review({ round, shapes }: { round: Round; shapes: Record<string, string> }) {
+function Review({
+  round,
+  shapes,
+}: {
+  round: Round;
+  shapes: Record<string, string>;
+}) {
   return (
     <div className="round__complete__review flex flex-wrap justify-center tablet:-mt-[210px] phone:mt-0">
       {(round.jamo ?? []).map((jamo, i) => (
-        <motion.div
+        <div
           className="round__complete__review__jamo relative h-[140px] w-[180px] phone:h-[125px] phone:w-[140px] [&>*]:absolute"
           key={jamo}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
         >
           <Circle
             r={137}
@@ -251,13 +269,13 @@ function Review({ round, shapes }: { round: Round; shapes: Record<string, string
             pop={i * 0.15}
           />
           <Badge
-            variant={isMedial(jamo) ? 'blue' : 'default'}
+            variant={isMedial(jamo) ? "blue" : "default"}
             className="top-[2.7777rem] left-[2.7777rem] h-[1.5rem] w-[1.5rem] text-[0.5rem] leading-[1.5rem] phone:top-[66px] phone:left-[91px]"
           >
             {getJamoHint(jamo)}
           </Badge>
-        </motion.div>
+        </div>
       ))}
     </div>
-  )
+  );
 }
