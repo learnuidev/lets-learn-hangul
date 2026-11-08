@@ -28,9 +28,9 @@ whenever you add, move or rename a file in `src/routes/`.
 | Script              | What it does                                                        |
 | ------------------- | ------------------------------------------------------------------- |
 | `npm run dev`       | Vite dev server with SSR + HMR on port 3001                          |
-| `npm run build`     | Production build into `dist/` (`dist/client` + `dist/server`)         |
-| `npm start`         | **Production server**: `server.mjs` serves the SSR handler plus the static client build (defaults to port 3000; use `PORT=… npm start` to change) |
-| `npm run preview`   | `vite preview` — static client build only, **no SSR**; use `npm start` to check real behaviour |
+| `npm run build`     | Production build into `.output/` (Nitro server + client assets)      |
+| `npm start`         | Serve the build: `node .output/server/index.mjs` (respects `PORT`)   |
+| `npm run preview`   | `vite preview` against the Nitro build                               |
 | `npm run typecheck` | `tsc --noEmit` over the whole project                                |
 
 ---
@@ -46,9 +46,40 @@ whenever you add, move or rename a file in `src/routes/`.
 | Animation      | Plain **CSS keyframes** + CSS transitions (no animation library)       |
 | Audio          | [Howler](https://howlerjs.com), loaded lazily on first interaction     |
 | Markdown       | react-markdown + remark-gfm + remark-breaks + rehype-raw                |
-| Prod server    | [srvx](https://srvx.h3.dev) serving the Start handler + static assets   |
+| Build          | Vite 8 + [Nitro](https://nitro.build) (`nitro/vite`) — one build, any host |
+| Hosting        | Vercel (`tanstack-start` framework preset); Node/Netlify/Cloudflare work too |
 
 ---
+
+## Deployment
+
+The build is a single Nitro pipeline on top of TanStack Start, so deployment needs no custom
+server code:
+
+```bash
+npm run build     # → .output/  (server + static assets)
+npm start         # → node .output/server/index.mjs
+```
+
+**Vercel** — zero configuration as well:
+
+- `vercel.json` pins the framework preset (`tanstack-start`), which is only needed when
+  auto-detection fails (monorepos, a project that previously used another framework).
+- On Vercel, Nitro detects the environment and emits the [Build Output
+  API](https://vercel.com/docs/build-output-api/v3) layout — verified locally with
+  `VERCEL=1 npm run build`, which produces:
+
+  ```
+  .vercel/output/config.json        # routes, asset caching, /__server function
+  .vercel/output/functions/__server.func
+  .vercel/output/static/…           # public/ assets
+  ```
+
+- Then either connect the repo in the dashboard (every push gets a preview URL) or run
+  `vercel --prod` / `npx nitro deploy --prebuilt`.
+
+Because the target comes from Nitro, the same repo also builds for a plain Node server
+(`npm start`), Netlify and Cloudflare by changing only the environment.
 
 ## Architecture
 
@@ -172,7 +203,7 @@ src/
 └── styles/
     ├── app.css             # Tailwind theme, base typography, shared component classes
     └── data-uris.css       # arrow glyphs and social logos from the 2016 stylesheet
-server.mjs                  # production entry (srvx + static client build)
+vercel.json                 # framework preset hint for Vercel
 ```
 
 ---

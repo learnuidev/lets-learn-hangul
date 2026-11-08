@@ -9,6 +9,8 @@ node_modules
 # Build output
 dist
 .output
+.vercel
+dist-ssr
 
 # Caches and scratch space
 .tmp
