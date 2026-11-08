@@ -14,7 +14,7 @@ const table = (
 ).split(' ')
 
 /** Same swipe-up cross-fade as the level/round indicator and the logo. */
-const swipe = 'transition-[translate_200ms_ease-out,opacity_100ms_ease-in]'
+const swipe = 'swipe-swap'
 
 interface JamoTableProps {
   geometric: Record<string, string>

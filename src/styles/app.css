@@ -369,6 +369,24 @@
   }
 
   /*
+   * The "swipe up + fade" cross-fade used by the level/round indicator, the logo
+   * and the jamo table. Both layers share one travel curve; the fade is shorter
+   * than the travel so the swap reads as one continuous motion instead of two
+   * overlapping jumps.
+   */
+  .swipe-swap {
+    transition:
+      translate 340ms cubic-bezier(0.32, 0.72, 0, 1),
+      opacity 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .swipe-swap {
+      transition-duration: 1ms, 1ms;
+    }
+  }
+
+  /*
    * Entry animations are plain CSS keyframes: an animation runs once when the
    * element is inserted and cannot be restarted by a re-render, which a JS
    * animation library can do (and did — the circle popped twice when moving

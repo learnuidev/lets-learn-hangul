@@ -4,7 +4,7 @@ import { LandingBrushTitle } from '@/components/landing-brush-title'
 import { cn } from '@/lib/utils'
 
 /** Same swipe-up cross-fade used by the level/round indicator. */
-const swipe = 'transition-[translate_200ms_ease-out,opacity_100ms_ease-in]'
+const swipe = 'swipe-swap'
 
 /**
  * The little "Let's Learn Hangul!" badge that sits in the top-left corner.

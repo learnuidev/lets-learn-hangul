@@ -11,7 +11,7 @@ interface YouAreHereProps {
 
 const itemClass = 'group/item absolute block top-[0.5555rem] h-[1.52rem] phone:top-[8px]'
 
-const swipe = 'transition-[translate_200ms_ease-out,opacity_100ms_ease-in]'
+const swipe = 'swipe-swap'
 
 const wordClass = `absolute block translate-y-0 opacity-100 group-hover/item:-translate-y-[16px] group-hover/item:opacity-0 ${swipe}`
 
