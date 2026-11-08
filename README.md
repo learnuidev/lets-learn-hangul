@@ -41,6 +41,7 @@ whenever you add, move or rename a file in `src/routes/`.
 | -------------- | ---------------------------------------------------------------------- |
 | Framework      | [TanStack Start](https://tanstack.com/start) 1.x — SSR, streaming, server entry |
 | Routing        | [TanStack Router](https://tanstack.com/router) — file-based, fully typed routes |
+| Runtime        | [TanStack Redact](https://tanstack.com/redact/latest) — a smaller drop-in React runtime (see [Runtime](#runtime)) |
 | UI primitives  | [shadcn/ui](https://ui.shadcn.com) components on Radix (`button`, `badge`, `input`, `tooltip`, `dialog`) |
 | Styling        | [Tailwind CSS v4](https://tailwindcss.com) with a custom `@theme`       |
 | Animation      | Plain **CSS keyframes** + CSS transitions (no animation library)       |
@@ -97,6 +98,28 @@ over the network:
   without a round trip.
 - Markdown slides are split on `---` by `processText()` in `src/lib/text.ts`, exactly like
   the original server did.
+
+### Runtime
+
+[TanStack Redact](https://tanstack.com/redact/latest) replaces the React runtime at build
+time: `redact()` in `vite.config.ts` redirects `react` / `react-dom` imports to Redact's own
+implementation, so the app keeps writing ordinary React — components, hooks, Context,
+`createRoot`, `hydrateRoot` — while shipping a smaller, synchronous runtime. React and React
+DOM stay installed; nothing in `src/` imports Redact directly.
+
+Two configuration details are deliberate:
+
+- **Feature flags stay at the default full set.** The optional `nano` preset (and
+  `portal: false`) would break Radix's dialog and tooltip, which render through
+  `createPortal`, and Start needs hydration, context, Suspense, lazy, memo and `forwardRef`.
+- **`ssr.noExternal` is enabled for `build` only.** Bundling server dependencies is what lets
+  Redact reach their `react` imports. During `vite dev` the same setting makes Vite's SSR
+  module runner inline CJS packages such as `tslib` (via `react-remove-scroll` ← Radix),
+  whose default export it cannot interop, and every route 500s.
+
+Verified against the production build and the dev server: SSR on every route, hydration with
+no console errors, client-side navigation, controlled inputs, form submission, and portaled
+dialog/tooltip content.
 
 ### State
 
