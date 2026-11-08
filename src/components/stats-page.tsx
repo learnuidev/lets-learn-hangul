@@ -15,6 +15,7 @@ import {
   type RoundRecord,
 } from "@/lib/lifetime";
 import { useUser } from "@/providers/user-store";
+import { nextLesson } from "@/lib/resume";
 import { cn } from "@/lib/utils";
 
 interface StatsPageProps {
@@ -64,7 +65,8 @@ export function StatsPage({ levels, rounds }: StatsPageProps) {
   const answers =
     totals.words + totals.misses + totals.quizCorrect + totals.quizWrong;
   const quizAttempts = totals.quizCorrect + totals.quizWrong;
-  const next = user.latest ? parseRoundKey(user.latest) : null;
+  // Same destination as "Yes, keep going!" on the welcome-back prompt.
+  const next = user.latest ? nextLesson(levels, user.latest) : null;
   const show = (value: number | string) => (ready ? value : "—");
 
   const actions = (
@@ -78,23 +80,27 @@ export function StatsPage({ levels, rounds }: StatsPageProps) {
         className="ml-[0.4rem]"
         asChild
       >
-        <Link
-          to={next ? "/level/$level/round/$round" : "/level/$level"}
-          params={
-            next
-              ? { level: String(next[0]), round: String(next[1]) }
-              : { level: "1" }
-          }
-        >
-          {next ? "Continue" : "Start"}
-        </Link>
+        {!user.latest ? (
+          <Link to="/level/$level" params={{ level: "1" }}>
+            Start
+          </Link>
+        ) : next ? (
+          <Link
+            to="/level/$level/round/$round"
+            params={{ level: String(next.level), round: String(next.round) }}
+          >
+            Continue
+          </Link>
+        ) : (
+          <Link to="/learnedeverything">Continue</Link>
+        )}
       </Button>
     </>
   );
 
   return (
     <>
-      <div className="stats radial mt-[30px] w-[1000px] wide:h-[620px] wide:min-h-[620px] tablet-down:mt-0 tablet-down:min-h-[520px] tablet-down:w-auto">
+      <div className="stats radial mt-[30px] w-[1000px] wide:h-[660px] wide:min-h-[660px] tablet-down:mt-0 tablet-down:min-h-[520px] tablet-down:w-auto">
         {/*
          * On a wide screen every child of `.radial` is centred by the
          * stylesheet, so positions here are margins away from the middle of the
@@ -196,7 +202,7 @@ export function StatsPage({ levels, rounds }: StatsPageProps) {
          * box back by half its own width), sitting below the discs with an even
          * gap above the discs and below the row.
          */}
-        <div className="absolute top-[50%] left-[50%] mt-[250px] flex items-center justify-center tablet-down:hidden">
+        <div className="absolute top-[50%] left-[50%] mt-[286px] flex items-center justify-center tablet-down:hidden">
           {actions}
         </div>
       </div>
