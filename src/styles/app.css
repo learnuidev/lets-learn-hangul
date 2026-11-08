@@ -1,0 +1,391 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import './data-uris.css';
+
+/*
+ * Breakpoints are declared in px on purpose: the document root font-size is
+ * 36px (27px on phones) so that the original rem-based design keeps its exact
+ * proportions, which would make rem-based media queries nonsense.
+ */
+@custom-variant phone (@media (max-width: 600px));
+@custom-variant phone-up (@media (min-width: 601px));
+@custom-variant tablet-down (@media (max-width: 900px));
+@custom-variant tablet (@media (min-width: 601px) and (max-width: 900px));
+@custom-variant wide (@media (min-width: 901px));
+@custom-variant sm-desktop (@media (min-width: 1200px) and (max-width: 1400px));
+@custom-variant desktop (@media (min-width: 1401px));
+@custom-variant xs (@media (max-width: 340px));
+
+/*
+ * The screens toggle a handful of modifier classes (`.show-correct`,
+ * `.has-image`, …) exactly like the original markup did; these variants let the
+ * children react to them from Tailwind utilities.
+ */
+@custom-variant show-correct (&:where(.show-correct *));
+@custom-variant has-image (&:where(.has-image *));
+@custom-variant one-syllable (&:where(.one-syllable *));
+@custom-variant medium-word (&:where(.medium-word *));
+@custom-variant long-word (&:where(.long-word *));
+
+@theme {
+  /* Palette carried over from the original _colors.scss */
+  --color-ink: #2d2b29;
+  --color-butter: #f9f5ea;
+  --color-brand-red: #ee1a60;
+  --color-brand-red-dark: #b70d4e;
+  --color-brand-red-soft: rgb(238 26 96 / 0.2);
+  --color-brand-blue: #367add;
+  --color-brand-blue-soft: rgb(54 122 221 / 0.2);
+  --color-brand-green: #5bd8ae;
+  --color-brand-green-soft: rgb(16 198 116 / 0.2);
+  --color-brand-orange: #ff871a;
+  --color-brand-purple: #715bc1;
+  --color-brand-fire: #e55555;
+  --color-twitter: #55acee;
+  --color-twitter-soft: rgb(85 172 238 / 0.2);
+  --color-facebook: #4267b2;
+  --color-facebook-soft: rgb(66 103 178 / 0.2);
+
+  --font-sans:
+    'ff-enzo-web', '나눔고딕', NanumGothic, NanumGothicOTF,
+    'hiragino kaku gothic pro', Dotum, sans-serif;
+  --font-korean:
+    '나눔고딕', NanumGothic, NanumGothicOTF, 'hiragino kaku gothic pro',
+    Dotum, sans-serif;
+
+  --radius-bubble: 300px;
+
+  /* Default breakpoints are rem-based and would scale with the 36px root. */
+  --breakpoint-*: initial;
+}
+
+@layer base {
+  html {
+    font-size: 36px;
+    background-color: var(--color-butter);
+  }
+
+  @media (max-width: 600px) {
+    html {
+      font-size: 27px;
+    }
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: var(--color-butter);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 24px;
+    line-height: 36px;
+    font-weight: 600;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  @media (max-width: 600px) {
+    body {
+      font-size: 18px;
+      line-height: 27px;
+    }
+  }
+
+  /*
+   * Tailwind's preflight flattens headings and paragraphs; the original design
+   * leaned on browser defaults, so they are restored here.
+   */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 700;
+  }
+
+  h1 {
+    font-size: 1rem;
+    line-height: 1.2222rem;
+    margin: 0.67em 0;
+  }
+
+  h2 {
+    font-size: 1.5em;
+    margin: 0.83em 0;
+  }
+
+  h3 {
+    font-size: 1.17em;
+    margin: 1em 0;
+  }
+
+  h4 {
+    margin: 1.33em 0;
+  }
+
+  h5 {
+    font-size: 0.83em;
+    margin: 1.67em 0;
+  }
+
+  p {
+    margin-top: 0;
+    margin-bottom: 1em;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+
+  ul,
+  ol {
+    margin: 1em 0;
+    padding-left: 40px;
+  }
+
+  ul {
+    list-style: disc;
+  }
+
+  a {
+    text-decoration: none;
+    color: var(--color-brand-blue);
+  }
+
+  @media (hover: hover) {
+    a:hover {
+      text-decoration: underline;
+    }
+  }
+
+  label {
+    display: block;
+    text-transform: uppercase;
+    font-size: 0.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+
+  strong,
+  b {
+    font-weight: 700;
+  }
+
+  /*
+   * Preflight block-ifies replaced elements. The original page only used
+   * normalize.css, where inline SVGs flow with the text — several screens stack
+   * syllables and wordmarks that way, so inline is restored globally.
+   */
+  img,
+  svg,
+  video,
+  canvas,
+  iframe,
+  embed,
+  object {
+    display: inline;
+  }
+}
+
+@layer components {
+  /* Default display sizes, as declared by the original component stylesheets. */
+  .big-syllable {
+    width: 60px;
+    height: 60px;
+  }
+
+  .big-text {
+    width: 60px;
+    height: 40px;
+  }
+
+  .big-jamo {
+    width: 360px;
+    height: 360px;
+  }
+
+  .circle {
+    display: block;
+  }
+
+  /*
+   * The original `.radial` mixin: a relative box whose children are centred in
+   * the middle of the page. Centring uses the individual `translate` property
+   * (not `transform`) so Tailwind's `translate-*` utilities override it the way
+   * the original per-component `transform` rules did.
+   */
+  .radial {
+    position: relative;
+  }
+
+  @media (max-width: 600px) {
+    .radial {
+      min-height: 480px;
+    }
+  }
+
+  @media (min-width: 901px) {
+    .radial {
+      min-height: 600px;
+    }
+  }
+
+  .radial > * {
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+  }
+
+  /*
+   * Back/Continue share a baseline: a flex row keeps both buttons the same
+   * height and top edge, which the original's inline layout did by accident.
+   */
+  .back-forward-buttons {
+    display: flex;
+    align-items: center;
+  }
+
+  /*
+   * On phones every screen's Back/Continue pair turns into a bar pinned to the
+   * bottom of the viewport, as in the original stylesheet.
+   */
+  @media (max-width: 600px) {
+    .back-forward-buttons {
+      position: fixed !important;
+      text-align: center !important;
+      left: 0 !important;
+      right: 0 !important;
+      top: auto !important;
+      bottom: 0 !important;
+      background: rgb(249 245 234 / 0.9);
+      padding: 9px !important;
+      z-index: 200;
+      transform: none !important;
+      width: auto !important;
+      min-height: 54px;
+      margin: 0 !important;
+    }
+
+    .back-forward-buttons > a,
+    .back-forward-buttons > button {
+      display: block !important;
+      position: absolute !important;
+      top: 9px !important;
+      transform: none !important;
+    }
+
+    .back-forward-buttons > [data-forward] {
+      right: 9px !important;
+      left: auto !important;
+    }
+
+    .back-forward-buttons > [data-back] {
+      left: 9px !important;
+      right: auto !important;
+    }
+
+    .back-forward-buttons > :nth-child(2) {
+      margin-left: 1rem;
+    }
+  }
+
+  .constellation {
+    opacity: 0.5;
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .confetti {
+    position: fixed;
+    inset: 0;
+    perspective: 2000px;
+    pointer-events: none;
+    z-index: 20000;
+  }
+
+  .confetti__container {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .confetti__piece {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100px;
+    height: 100px;
+  }
+
+  /*
+   * Arrow affordances on the forward/back buttons. The image comes from the
+   * `--btn-arrow` custom property so colored variants get a matching arrow.
+   */
+  .btn-arrow-forward::after {
+    content: '';
+    display: inline-block;
+    vertical-align: middle;
+    background-image: var(--btn-arrow, var(--arrow-blue));
+    background-position: center right;
+    background-repeat: no-repeat;
+    height: 15px;
+    width: 40px;
+    margin-left: 12px;
+    transition: width 0.06s ease-out;
+  }
+
+  .btn-arrow-back::before {
+    content: '';
+    display: inline-block;
+    vertical-align: middle;
+    background-image: var(--btn-arrow-left, var(--arrow-blue-left));
+    background-position: center left;
+    background-repeat: no-repeat;
+    height: 15px;
+    width: 20px;
+    margin-right: 12px;
+    transition: width 0.06s ease-out;
+  }
+
+  @media (max-width: 600px) {
+    .btn-arrow-forward::after,
+    .btn-arrow-back::before {
+      background-size: 80px 12px;
+      height: 12px;
+    }
+  }
+
+  @media (hover: hover) {
+    .btn-arrow-forward:hover::after {
+      width: 52px;
+    }
+  }
+
+  @keyframes scale-in {
+    0% {
+      transform: scale(0);
+    }
+    66% {
+      transform: scale(1);
+    }
+    83% {
+      transform: scale(0.9);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+}
+
+@utility text-shadow-butter {
+  text-shadow:
+    var(--color-butter) -1px -1px 0,
+    var(--color-butter) -1px 1px 0,
+    var(--color-butter) 1px 1px 0,
+    var(--color-butter) 1px -1px 0;
+}

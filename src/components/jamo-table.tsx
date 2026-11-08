@@ -1,0 +1,78 @@
+import { GeometricJamo } from '@/components/geometric-jamo'
+import type { Jamo } from '@/data/types'
+import { getJamoHint } from '@/lib/display'
+import { isMedial } from '@/lib/hangul'
+import { play } from '@/lib/sound'
+import { cn } from '@/lib/utils'
+
+const table = (
+  'ㄱ ㄴ ㄷ ㄹ ㅎ ㅋ ㅍ ㄲ ㄸ ㅃ ' +
+  'ㅂ ㅅ ㅇ ㅈ ㅁ ㅊ ㅌ ㅆ ㅉ ㅢ ' +
+  'ㅣ ㅡ ㅗ ㅜ ㅛ ㅠ ㅖ ㅘ ㅙ ㅚ ' +
+  'ㅐ ㅔ ㅏ ㅓ ㅒ ㅑ ㅕ ㅝ ㅞ ㅟ'
+).split(' ')
+
+interface JamoTableProps {
+  geometric: Record<string, string>
+  jamos: Record<string, Jamo>
+  known?: Record<string, boolean>
+  newJamos?: string[]
+}
+
+/**
+ * The full 40-letter grid revealed at the end of a round: dim for letters the
+ * learner has not met, highlighted for the ones just learned.
+ */
+export function JamoTable({ geometric, jamos, known = {}, newJamos = [] }: JamoTableProps) {
+  return (
+    <div className="jamo-table flex w-[1000px] flex-wrap phone:w-full">
+      {table.map((jamo) => {
+        const isNew = newJamos.includes(jamo)
+        return (
+          <button
+            type="button"
+            key={jamo}
+            className={cn(
+              'jamo-table__jamo group/jamo relative block h-[100px] w-[100px] cursor-pointer bg-transparent p-0 leading-none phone:h-[2rem] phone:w-[20%]',
+              !known[jamo] && 'jamo-table__jamo--unknown opacity-10',
+              isNew && [
+                'jamo-table__jamo--new',
+                'before:absolute before:top-1/2 before:left-1/2 before:block before:h-[80px] before:w-[80px]',
+                'before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-[80px] before:bg-white before:content-[""]',
+                'before:animate-[scale-in_0.72s_both] before:[animation-delay:inherit]',
+                'phone:before:h-[60%] phone:before:w-[60%] phone:before:pb-[60%]',
+              ],
+            )}
+            style={{ animationDelay: `${Math.max(0, newJamos.indexOf(jamo)) * 120}ms` }}
+            data-jamo={jamo}
+            onClick={() => {
+              const url = jamos[jamo]?.audio?.url
+              if (url) play(url)
+            }}
+            onTouchStart={(event) => {
+              const element = event.currentTarget
+              element.classList.add('touched')
+              setTimeout(() => element.classList.remove('touched'), 500)
+            }}
+          >
+            <GeometricJamo
+              jamo={jamo}
+              geometric={geometric}
+              className="relative top-[20px] left-[20px] z-5 h-[60px] w-[60px] transition-opacity phone:top-[0.4rem] phone:left-[20%] phone:h-[1.2rem] phone:w-[60%] group-hover/jamo:opacity-0 group-[.touched]/jamo:opacity-0"
+            />
+            <span
+              className={cn(
+                'jamo-table__jamo__latin pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+                'text-[0.8888rem] font-black text-brand-red opacity-0',
+                'group-hover/jamo:opacity-100 group-[.touched]/jamo:opacity-100',
+                isMedial(jamo) && 'vowel text-brand-blue',
+              )}
+            >
+              {getJamoHint(jamo)}
+            </span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
