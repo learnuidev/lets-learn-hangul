@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { UnlocksPage } from '@/components/unlocks-page'
+import { ProgressPage } from '@/components/progress-page'
 import { getCourse } from '@/lib/course'
 
 export const Route = createFileRoute('/unlocks/')({
@@ -22,5 +22,5 @@ export const Route = createFileRoute('/unlocks/')({
 
 function RouteComponent() {
   const { levels, rounds } = Route.useLoaderData()
-  return <UnlocksPage levels={levels} rounds={rounds} />
+  return <ProgressPage tab="unlocks" levels={levels} rounds={rounds} />
 }

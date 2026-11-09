@@ -2,19 +2,23 @@ import { Link } from '@tanstack/react-router'
 import { ChartColumn } from 'lucide-react'
 
 /**
- * Standing entry point to `/stats`, pinned to the bottom-left corner.
+ * Standing entry point to the progress page (`/stats` → Stats tab, and the
+ * Unlocks tab beside it).
+ *
+ * One icon, because the record is one page: the tabs inside it separate what
+ * used to be two competing buttons in this corner.
  *
  * `z-40` is deliberate: the full-screen course index is a `z-50` dialog, so the
  * icon is covered while that overlay is open instead of floating above it. On
  * phones the Back/Continue bar owns the bottom edge, so the icon steps up above
  * it (`phone:bottom-[64px]`).
  */
-export function StatsLink({ className }: { className?: string }) {
+export function ProgressLink({ className }: { className?: string }) {
   return (
     <Link
       to="/stats"
-      aria-label="Your stats"
-      title="Your stats"
+      aria-label="Your progress"
+      title="Your progress"
       className={[
         'fixed bottom-[0.5rem] left-[0.5rem] z-40 flex h-[38px] w-[38px] items-center justify-center',
         'rounded-full border border-ink/12 bg-white/70 text-ink/60',

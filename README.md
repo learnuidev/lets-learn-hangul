@@ -157,11 +157,23 @@ in two shapes, both inside the saved profile, so `/stats` never needs a server:
   log is only a recent-activity trail, and without a cap it would grow until `localStorage`
   gave out.
 
-`/stats` (`src/routes/stats.tsx` → `src/components/stats-page.tsx`) renders the record in the
-round summary's vocabulary: a `.radial` stage of `Circle` discs with uppercase labels, then a
-per-lesson breakdown laid out like the course index. The icon in the bottom-left corner
-(`stats-link.tsx`) is the entry point and is hidden on the page itself; the numbers appear
-after hydration because the record only exists in the browser.
+### One progress page, two tabs
+
+`/stats` and `/unlocks` are the same page with a different tab open. Both routes render
+`src/components/progress-page.tsx`, which puts the tab strip on top and then hands off to
+`stats-page.tsx` or `unlocks-page.tsx`; each tab keeps its own `.radial` stage and sections, so
+neither had to be re-laid-out to be merged.
+
+- The tabs are real links (`src/components/progress-tabs.tsx`), so every section keeps its own
+  URL, back/forward works, and a shared link opens the section it names.
+- They are built from the `Button` primitive: the open tab is `variant="default"` (the blue-soft
+  fill), the others `variant="quiet"` — the same box, radius and type as every other control, so
+  switching tabs moves nothing.
+- Adding a section is one route file, one entry in `PROGRESS_TABS`, and one view in
+  `progress-page.tsx`; nothing else in the app needs to know the record was split up.
+- One corner icon (`progress-link.tsx`, bottom-left) opens the page on its first tab and is
+  hidden while the record is open. It probably goes without saying that the numbers appear
+  after hydration: the record only exists in the browser.
 
 ### Exercise progress lives in the URL
 
@@ -251,8 +263,8 @@ URLs are identical to the 2016 site:
 /learnedeverything                 finale counter
 /nowwhat                           share + further resources
 /credits                           audio and photo credits
-/stats                             your practice record
-/unlocks                           what your letters let you read
+/stats                             progress page, stats tab (what you have practised)
+/unlocks                           progress page, unlocks tab (what you can read)
 /unlocks/blocks/$block             one syllable block, and every word using it
 ```
 
@@ -298,7 +310,7 @@ src/
 │   ├── __root.tsx          # document shell, providers, app chrome
 │   ├── level.$level.*      # level intro, round branch, level complete
 │   └── learnedemall.tsx / learnedeverything.tsx / nowwhat.tsx / credits.tsx
-│   └── stats.tsx / unlocks.tsx
+│   └── stats.tsx / unlocks.*.tsx   # one progress page + its block pages
 ├── components/
 │   ├── ui/                 # shadcn/ui primitives
 │   └── *.tsx               # screens (landing, round-*, learned-*) and visuals

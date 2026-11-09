@@ -2,8 +2,7 @@ import type { ReactNode } from 'react'
 import { Link, useRouterState } from '@tanstack/react-router'
 import { Constellation } from '@/components/constellation'
 import { CourseIndex } from '@/components/course-index'
-import { StatsLink } from '@/components/stats-link'
-import { UnlocksLink } from '@/components/unlocks-link'
+import { ProgressLink } from '@/components/progress-link'
 import type { Level, Round } from '@/data/types'
 
 interface AppShellProps {
@@ -30,9 +29,8 @@ export function AppShell({ levels, rounds, geometric, children }: AppShellProps)
 
       <CourseIndex levels={levels} rounds={rounds} />
 
-      {/* No dead link when the page itself is already open. */}
-      {pathname !== '/stats' && <StatsLink />}
-      {!pathname.startsWith('/unlocks') && <UnlocksLink />}
+      {/* No dead link when the record page itself is already open. */}
+      {!scrolling && <ProgressLink />}
 
       {/*
        * The footer is pinned to the viewport, so it only works on the app's

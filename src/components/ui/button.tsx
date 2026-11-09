@@ -41,6 +41,12 @@ export const buttonVariants = cva(
           'hover:before:mr-[1em] hover:before:ml-[0.5em]',
         ].join(' '),
         link: 'bg-transparent text-[14px] leading-[18px] text-brand-blue',
+        /**
+         * The unselected half of a `default` button pair — a tab that is not the
+         * current one. Same box, no fill, so a strip of them keeps the shape of
+         * the selected one and nothing jumps when you switch.
+         */
+        quiet: 'bg-transparent text-ink/40 hover:bg-white/70 hover:text-ink/70',
         bare: 'bg-transparent p-0 text-inherit',
       },
       size: {
