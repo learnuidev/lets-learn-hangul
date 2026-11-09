@@ -171,7 +171,7 @@ export function UnlocksBlockPage({ block, levels, rounds }: UnlocksBlockPageProp
       </div>
 
       <Section title="Letters">
-        <ul className="flex flex-wrap gap-x-[0.24rem] gap-y-[0.16rem]">
+        <ul className="m-0 flex list-none flex-wrap gap-x-[0.24rem] gap-y-[0.16rem] pl-0">
           {item.letters.map((letter, i) => (
             <li key={letter}>
               <JamoDisc
@@ -265,7 +265,7 @@ function Group({
         </span>
         <span className="text-[11px] leading-[14px] uppercase opacity-25">{words.length}</span>
       </div>
-      <ul className="wide:columns-2 wide:gap-[1.6rem]">
+      <ul className="m-0 list-none pl-0 wide:columns-2 wide:gap-[1.6rem]">
         {visible.map((word) => (
           <UnlockWord
             key={word.input}

@@ -170,7 +170,7 @@ export function UnlocksPage({ levels, rounds }: UnlocksPageProps) {
           In the order the course introduces them. Each block and word below is
           waiting on the letters still greyed out here.
         </p>
-        <ul className="flex flex-wrap gap-x-[0.16rem] gap-y-[0.2rem]">
+        <ul className="m-0 flex list-none flex-wrap gap-x-[0.16rem] gap-y-[0.2rem] pl-0">
           {progress.letters.map((letter, i) => (
             <li key={letter.letter}>
               <JamoDisc
@@ -346,7 +346,7 @@ function SyllableSection({
       </p>
       <FilterRow value={filter} counts={counts} onChange={setFilter} label="Filter syllables" />
       <Legend />
-      <ul className="flex flex-wrap gap-x-[0.1rem] gap-y-[0.24rem]">
+      <ul className="m-0 flex list-none flex-wrap gap-x-[0.1rem] gap-y-[0.24rem] pl-0">
         {visible.map((item) => {
           const state = states[stateKey("syllable", item.input)];
           const status = state?.status ?? "locked";
@@ -446,7 +446,7 @@ function WordSection({
         ones are still waiting on a letter.
       </p>
       <FilterRow value={filter} counts={counts} onChange={setFilter} label="Filter words" />
-      <ul className="wide:columns-2 wide:gap-[1.6rem]">
+      <ul className="m-0 list-none pl-0 wide:columns-2 wide:gap-[1.6rem]">
         {visible.map((item) => (
           <UnlockWord
             key={item.input}
