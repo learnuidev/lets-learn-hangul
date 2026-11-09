@@ -20,6 +20,10 @@
  * into the objects the unlocks page renders. Entries stay in source order —
  * ordering by "the lesson that completes them" needs the course data, so it
  * happens at runtime.
+ *
+ * The source dataset's own `roman` column is dropped: pronunciations in the app
+ * come from its romanizer (`romanizeIdeal` in `src/lib/romanize.ts`), so the
+ * course and the collection can never disagree about how a block is read.
  */
 
 import fs from 'node:fs'
@@ -103,7 +107,7 @@ for (const entry of rawComponents) {
   if (!isSyllableWord(input) || Array.from(input).length !== 1 || !en) continue
   if (seenComponents.has(input)) continue
   seenComponents.add(input)
-  components.push([input, en, clean(entry.roman)])
+  components.push([input, en])
 }
 components.sort((a, b) => byString(a[0], b[0]))
 
@@ -154,12 +158,8 @@ const banner = `/**
 
 const source = `${banner}
 
-/** A single syllable block: the glyph, its gloss, and how it is pronounced. */
-export type KoreanSyllable = readonly [
-  syllable: string,
-  english: string,
-  roman: string,
-]
+/** A single syllable block and its gloss. */
+export type KoreanSyllable = readonly [syllable: string, english: string]
 
 /** A word: the spelling, its gloss, and the easiest CEFR band it appears in. */
 export type KoreanWord = readonly [

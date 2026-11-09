@@ -113,11 +113,23 @@ export function RoundComplete({
           )}
           {showingReview && unlocked > 0 && unlocks && (
             <p className="relative z-5 mt-[0.12rem] text-[15px] leading-[20px] opacity-60">
-              They unlock <b className="text-brand-blue">{unlocks.syllables}</b>{" "}
-              syllables and <b className="text-brand-blue">{unlocks.words}</b>{" "}
-              words — see{" "}
+              They unlock{" "}
+              {unlocks.syllables > 0 && (
+                <>
+                  <b className="text-brand-blue">{unlocks.syllables}</b>{" "}
+                  {unlocks.syllables === 1 ? "syllable" : "syllables"}
+                </>
+              )}
+              {unlocks.syllables > 0 && unlocks.words > 0 && " and "}
+              {unlocks.words > 0 && (
+                <>
+                  <b className="text-brand-blue">{unlocks.words}</b>{" "}
+                  {unlocks.words === 1 ? "word" : "words"}
+                </>
+              )}{" "}
+              — see{" "}
               <Link to="/unlocks" className="text-brand-blue">
-                everything you can read
+                your unlocks
               </Link>
               .
             </p>

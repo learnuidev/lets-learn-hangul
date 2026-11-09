@@ -33,18 +33,26 @@ function emptyRomanization(str: string): Romanization {
 }
 
 /**
- * Builds every acceptable Latin reading of a Korean word, including a regexp
- * that matches all of them plus the "ideal" romanization shown to learners.
+ * Collects every accepted reading of each jamo in `str`.
+ *
+ * Shared by `getRomanizations` (which then builds patterns and the full set of
+ * possible spellings) and by `romanizeIdeal` (which only needs the first
+ * reading of each jamo). Returns `null` when there is nothing to read.
  */
-export function getRomanizations(str = '', phonetic = false): Romanization {
-  if (str in cache) return cache[str]
-
+function readJamo(
+  str: string,
+  phonetic: boolean,
+): { jamoReadings: Readings[]; syllableReadings: Readings[][] } | null {
   const characters = str.split('')
-  if (characters.filter(isHangul).length === 0) return emptyRomanization(str)
+  if (characters.filter(isHangul).length === 0) return null
 
   const syllables = characters.map((character) => decompose(character))
   const word = syllables.reduce<string[]>((acc, syllable) => acc.concat(syllable ?? []), [])
-  const jamoReadings: Readings[] = word.map(() => readings())
+  // Sized as the loop fills it, not from `word`: `word` only holds the jamo of
+  // Hangul syllables, so a word like "읽은 책" (a space between two syllables)
+  // needs one more slot than it has jamo. Pre-sizing from `word.length` used to
+  // run off the end of the array and throw.
+  const jamoReadings: Readings[] = []
   const syllableReadings: Readings[][] = syllables.map(() => [])
 
   let i = 0
@@ -123,7 +131,7 @@ export function getRomanizations(str = '', phonetic = false): Romanization {
       if (isAfterS && rules.alternatesAfterS) contextual.push(...rules.alternatesAfterS)
       if (rules.alternates) contextual.push(...rules.alternates)
 
-      const current = jamoReadings[i]
+      const current = jamoReadings[i] ?? (jamoReadings[i] = readings())
       current.push(...pronunciation)
       if (!phonetic || pronunciation.length === 0) {
         current.push(...normal)
@@ -134,6 +142,34 @@ export function getRomanizations(str = '', phonetic = false): Romanization {
       i++
     }
   }
+
+  return { jamoReadings, syllableReadings }
+}
+
+/**
+ * The Latin reading shown to learners, and nothing else.
+ *
+ * `getRomanizations` also builds every acceptable spelling (a cartesian product
+ * that runs to tens of thousands of strings for long words) and a matching
+ * regexp — work only the typing exercise needs. Pages that merely *display* a
+ * pronunciation, like the unlocks collection, come through here instead.
+ */
+export function romanizeIdeal(str = ''): string {
+  const read = readJamo(str, false)
+  if (!read) return str
+  return read.jamoReadings.map((list) => list.literal || list[0]).join('')
+}
+
+/**
+ * Builds every acceptable Latin reading of a Korean word, including a regexp
+ * that matches all of them plus the "ideal" romanization shown to learners.
+ */
+export function getRomanizations(str = '', phonetic = false): Romanization {
+  if (str in cache) return cache[str]
+
+  const read = readJamo(str, phonetic)
+  if (!read) return emptyRomanization(str)
+  const { jamoReadings, syllableReadings } = read
 
   const ideal = jamoReadings.map((list) => list.literal || list[0]).join('')
   const pattern = jamoReadings.map(toPattern).join('')

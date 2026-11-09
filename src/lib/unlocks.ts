@@ -21,6 +21,7 @@
 import { koreanComponents, koreanWords } from '@/data/korean'
 import type { Round } from '@/data/types'
 import { decompose, decomposeDoubleJamo } from './hangul'
+import { romanizeIdeal } from './romanize'
 
 export type UnlockStatus = 'full' | 'partial' | 'locked'
 
@@ -33,8 +34,10 @@ export interface UnlockItem {
   readonly input: string
   /** English gloss. */
   readonly en: string
-  /** Romanization for a syllable, CEFR band for a word. */
-  readonly detail: string
+  /** English pronunciation, from the same romanizer the lessons use. */
+  readonly roman: string
+  /** Easiest CEFR band the word appears in; empty for a syllable block. */
+  readonly level: string
   /** Every letter it needs, in spelling order, deduplicated. */
   readonly letters: readonly string[]
   /** The lesson that teaches the last of `letters` — when this becomes readable. */
@@ -150,10 +153,18 @@ function lessonAt(rank: number, course: CourseLetters): string {
 
 function buildSyllables(course: CourseLetters): UnlockItem[] {
   return koreanComponents
-    .map(([input, en, roman]) => {
+    .map(([input, en]) => {
       const letters = lettersFor(input)
       const rank = rankOf(letters, course)
-      return { input, en, detail: roman, letters, lesson: lessonAt(rank, course), rank }
+      return {
+        input,
+        en,
+        roman: romanizeIdeal(input),
+        level: '',
+        letters,
+        lesson: lessonAt(rank, course),
+        rank,
+      }
     })
     .sort(
       (a, b) =>
@@ -172,7 +183,8 @@ function buildWords(course: CourseLetters): UnlockItem[] {
       return {
         input,
         en,
-        detail: level,
+        roman: romanizeIdeal(input),
+        level,
         letters,
         lesson: lessonAt(rank, course),
         rank,

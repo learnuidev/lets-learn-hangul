@@ -356,8 +356,9 @@ function SyllableSection({
   return (
     <Section title="Syllable blocks">
       <p className="m-0 mb-[0.3rem] text-[15px] leading-[20px] opacity-55">
-        {ready ? banner(counts) : "Reading your saved progress…"} — a block turns
-        white once every letter it is spelled with has come up in a lesson.
+        {ready ? banner(counts) : "Reading your saved progress…"} — the blue line
+        under each block is how it sounds. A block turns white once every letter
+        it is spelled with has come up in a lesson.
       </p>
       <FilterRow value={filter} counts={counts} onChange={setFilter} label="Filter syllables" />
       <Legend />
@@ -368,8 +369,8 @@ function SyllableSection({
           return (
             <li
               key={item.input}
-              className="flex w-[1.3rem] flex-col items-center"
-              title={`${item.input} — ${item.en} (${item.detail})${
+              className="flex w-[1.34rem] flex-col items-center"
+              title={`${item.input} — ${item.roman} — ${item.en}${
                 status === "full" ? "" : ` · needs ${(state?.missing ?? []).join(" ")}`
               }`}
             >
@@ -385,7 +386,7 @@ function SyllableSection({
                       ? "text-ink"
                       : status === "partial"
                         ? "text-ink/45"
-                        : "text-ink/25",
+                        : "text-ink/30",
                   )}
                 >
                   {item.input}
@@ -393,11 +394,19 @@ function SyllableSection({
               </span>
               <span
                 className={cn(
-                  "mt-[0.05rem] w-full truncate text-center text-[11px] leading-[13px]",
+                  "mt-[0.04rem] w-full truncate text-center text-[12px] leading-[13px] font-semibold",
+                  status === "full" ? "text-brand-blue/75" : "text-brand-blue/35",
+                )}
+              >
+                {item.roman}
+              </span>
+              <span
+                className={cn(
+                  "w-full truncate text-center text-[11px] leading-[13px] tablet-down:text-[10px]",
                   status === "full" ? "opacity-45" : "opacity-25",
                 )}
               >
-                {status === "locked" ? "\u00a0" : item.en}
+                {item.en}
               </span>
             </li>
           );
@@ -438,8 +447,9 @@ function WordSection({
   return (
     <Section title="Words">
       <p className="m-0 mb-[0.3rem] text-[15px] leading-[20px] opacity-55">
-        {ready ? banner(counts) : "Reading your saved progress…"} — syllables you
-        can already read stay dark; the pale ones are still waiting on a letter.
+        {ready ? banner(counts) : "Reading your saved progress…"} — pronunciation in
+        blue, meaning after it. Syllables you can already read stay dark; the pale
+        ones are still waiting on a letter.
       </p>
       <FilterRow value={filter} counts={counts} onChange={setFilter} label="Filter words" />
       <ul className="wide:columns-2 wide:gap-[1.6rem]">
@@ -471,6 +481,14 @@ function WordSection({
               </span>
               <span
                 className={cn(
+                  "shrink-0 text-[12px] leading-[15px] font-semibold italic",
+                  status === "full" ? "text-brand-blue/75" : "text-brand-blue/35",
+                )}
+              >
+                {item.roman}
+              </span>
+              <span
+                className={cn(
                   "min-w-0 flex-1 truncate text-[13px] leading-[16px]",
                   status === "full" ? "opacity-45" : "opacity-25",
                 )}
@@ -482,9 +500,9 @@ function WordSection({
                   needs {(state?.missing ?? []).join(" ")}
                 </span>
               )}
-              {item.detail && (
+              {item.level && (
                 <span className="shrink-0 text-[11px] leading-[14px] uppercase opacity-25">
-                  {item.detail}
+                  {item.level}
                 </span>
               )}
             </li>
