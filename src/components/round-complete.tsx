@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,8 @@ import { formatSeconds, getJamoHint } from "@/lib/display";
 import { isMedial } from "@/lib/hangul";
 import { keyMap } from "@/lib/collections";
 import { readStats } from '@/lib/stats'
-import { useUnlockIndex } from "@/hooks/use-unlocks";
+import { useUnlocks } from "@/hooks/use-unlocks";
+import { gainForLesson } from "@/lib/unlocks";
 import { cn } from "@/lib/utils";
 
 interface RoundCompleteProps {
@@ -47,10 +49,17 @@ export function RoundComplete({
 
   const nextRound = rounds[`${levelParam}.${Number(roundParam) + 1}`];
 
-  // What this round's new letters let the learner read for the first time. The
-  // count is fixed once the round is done, so it stays right on a reload.
-  const unlocks = useUnlockIndex(rounds).byLesson[`${levelParam}.${roundParam}`];
-  const unlocked = unlocks ? unlocks.syllables + unlocks.words : 0;
+  // What this round's own letters made readable — measured against the letters
+  // known *before* it, so a round opened out of order cannot claim the whole
+  // alphabet. Fixed once the round is done, so a reload reports the same thing.
+  const roundKey = `${levelParam}.${roundParam}`;
+  const { index, progress } = useUnlocks(rounds);
+  const unlocks = useMemo(() => {
+    const before = new Set(progress.known);
+    for (const letter of index.course.lettersByLesson[roundKey] ?? []) before.delete(letter);
+    return gainForLesson(index, before, roundKey);
+  }, [index, progress.known, roundKey]);
+  const unlocked = unlocks.syllables + unlocks.words;
 
   const current = parseFloat(`${levelParam}.${roundParam}`);
   const known = keyMap(

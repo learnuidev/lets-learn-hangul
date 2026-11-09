@@ -6,6 +6,7 @@ import { Figure } from "@/components/figure";
 import type { Level, Round } from "@/data/types";
 import { formatSeconds } from "@/lib/display";
 import {
+  completedLessons,
   computeStreaks,
   formatPercent,
   ratio,
@@ -59,7 +60,7 @@ export function StatsPage({ levels, rounds }: StatsPageProps) {
   const totals = totalCounts(stats.days);
   const streaks = computeStreaks(stats.days);
   const days = recentDays(stats.days, ACTIVITY_DAYS);
-  const lettersKnown = countKnownLetters(rounds, user.latest);
+  const lettersKnown = countKnownLetters(rounds, stats.rounds, user.latest);
   const practiced = Object.keys(stats.rounds).sort(compareRoundKeys);
   const nothingYet = ready && practiced.length === 0;
 
@@ -504,18 +505,20 @@ function countCourseLetters(rounds: Record<string, Round>): number {
   return seen.size;
 }
 
+/**
+ * Letters from lessons the learner has actually finished — the same rule the
+ * unlocks page uses (`completedLessons`), so the two screens can never disagree.
+ */
 function countKnownLetters(
   rounds: Record<string, Round>,
+  records: Record<string, RoundRecord>,
   latest: string | null,
 ): number {
-  if (!latest) return 0;
-  const [uptoLevel, uptoRound] = parseRoundKey(latest);
+  const done = completedLessons(records, latest);
   const seen = new Set<string>();
 
   for (const [key, round] of Object.entries(rounds)) {
-    const [level, roundNumber] = parseRoundKey(key);
-    if (level > uptoLevel || (level === uptoLevel && roundNumber > uptoRound))
-      continue;
+    if (!done.has(key)) continue;
     for (const jamo of round.jamo ?? []) seen.add(courseLetter(jamo));
   }
 

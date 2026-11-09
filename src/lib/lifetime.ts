@@ -61,6 +61,30 @@ export function emptyLifetime(): LifetimeStats {
   return { days: {}, rounds: {} }
 }
 
+/**
+ * The lesson keys (`"1.2"`, `"3.4"`, …) the learner has actually finished.
+ *
+ * `lessons` is incremented by `completeSession()`, so a round that was opened and
+ * abandoned has a record with `lessons: 0` and does not count.
+ *
+ * `latest` is added on top, because it is the one signal a profile saved before
+ * this record existed still carries. It is deliberately *not* expanded into
+ * "every lesson before it": nothing stops a learner from opening a late round
+ * directly, and crediting them with everything ahead of it is how one finished
+ * round at the end of level 3 used to unlock half the alphabet.
+ */
+export function completedLessons(
+  rounds: Record<string, RoundRecord>,
+  latest: string | null,
+): Set<string> {
+  const done = new Set<string>()
+  for (const [key, record] of Object.entries(rounds)) {
+    if (record.lessons > 0) done.add(key)
+  }
+  if (latest) done.add(latest)
+  return done
+}
+
 function toCount(value: unknown): number {
   const num = typeof value === 'number' ? value : 0
   return Number.isFinite(num) && num > 0 ? Math.floor(num) : 0

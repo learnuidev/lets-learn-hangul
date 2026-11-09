@@ -20,6 +20,7 @@
 
 import { koreanComponents, koreanWords } from '@/data/korean'
 import type { Round } from '@/data/types'
+import { completedLessons, type RoundRecord } from './lifetime'
 import { decompose, decomposeDoubleJamo } from './hangul'
 import { romanizeIdeal } from './romanize'
 
@@ -88,6 +89,8 @@ export interface CourseLetters {
   readonly taughtIn: Record<string, string>
   /** Lesson key → its position in `lessons`. */
   readonly rank: Record<string, number>
+  /** Lesson key → the letters that lesson introduces, as `jamo` lists them. */
+  readonly lettersByLesson: Record<string, readonly string[]>
 }
 
 /** `"1.10"` sorts after `"1.9"`, which plain string compares get wrong. */
@@ -107,19 +110,23 @@ export function courseLetters(rounds: Record<string, Round>): CourseLetters {
 
   const taughtIn: Record<string, string> = {}
   const rank: Record<string, number> = {}
+  const lettersByLesson: Record<string, string[]> = {}
 
   lessons.forEach((lesson, index) => {
     rank[lesson] = index
+    const letters: string[] = []
     for (const jamo of rounds[lesson]?.jamo ?? []) {
       const letter = jamo === '-' ? 'ㅇ' : jamo
+      letters.push(letter)
       if (!(letter in taughtIn)) taughtIn[letter] = lesson
     }
+    lettersByLesson[lesson] = letters
   })
 
-  return { lessons, taughtIn, rank }
+  return { lessons, taughtIn, rank, lettersByLesson }
 }
 
-/** How many items a single lesson completes. */
+/** How many items a lesson would make readable. */
 export interface LessonUnlocks {
   syllables: number
   words: number
@@ -136,8 +143,6 @@ export interface UnlockIndex {
   readonly blockByInput: Record<string, UnlockItem>
   /** Block spelling → every word spelled with it, in index order. */
   readonly wordsForBlock: Record<string, readonly UnlockItem[]>
-  /** Items each lesson completes, for the "this round unlocked…" nudge. */
-  readonly byLesson: Record<string, LessonUnlocks>
 }
 
 /** The lesson rank at which an item becomes readable; `Infinity` if never. */
@@ -220,17 +225,6 @@ export function unlockIndex(rounds: Record<string, Round>): UnlockIndex {
   const syllables = buildSyllables(course)
   const words = buildWords(course)
 
-  const byLesson: Record<string, LessonUnlocks> = {}
-  for (const lesson of course.lessons) byLesson[lesson] = { syllables: 0, words: 0 }
-  for (const item of syllables) {
-    const bucket = byLesson[item.lesson]
-    if (bucket) bucket.syllables += 1
-  }
-  for (const item of words) {
-    const bucket = byLesson[item.lesson]
-    if (bucket) bucket.words += 1
-  }
-
   const blockByInput: Record<string, UnlockItem> = {}
   for (const item of syllables) blockByInput[item.input] = item
 
@@ -251,7 +245,6 @@ export function unlockIndex(rounds: Record<string, Round>): UnlockIndex {
     words,
     blockByInput,
     wordsForBlock: Object.fromEntries(buckets),
-    byLesson,
   }
   cached = { rounds, index }
   return index
@@ -387,4 +380,63 @@ export function progress(index: UnlockIndex, input: ProgressInput): UnlockProgre
     )
 
   return { known, done, state, syllables, words, letters, next }
+}
+
+/**
+ * Which letters the saved profile has been taught.
+ *
+ * A letter counts once the lesson that introduces it has actually been finished
+ * — see `completedLessons()`. Lessons the learner skipped past therefore teach
+ * nothing: opening "Oppa!" from a fresh profile unlocks ㅃ, ㄸ and ㄲ, not the
+ * twenty-one rounds that happen to sit before it in the course.
+ */
+export function learnedLetters(
+  index: UnlockIndex,
+  latest: string | null,
+  records: Record<string, RoundRecord>,
+): ProgressInput {
+  const { course } = index
+  const done = completedLessons(records, latest)
+
+  const known = new Set<string>()
+  for (const [letter, lesson] of Object.entries(course.taughtIn)) {
+    if (done.has(lesson)) known.add(letter)
+  }
+
+  return { known, done }
+}
+
+/**
+ * What learning one lesson's letters would actually make readable, given what
+ * the learner knows now.
+ *
+ * This is *not* "every item the lesson completes": that is only the same thing
+ * while the course is taken in order. Someone who jumps straight to a late
+ * round would be told a lesson hands them dozens of blocks that still need
+ * letters from lessons they never opened, so the question is asked against the
+ * letters actually known — an item counts only if everything still missing from
+ * it is taught by this lesson.
+ */
+export function gainForLesson(
+  index: UnlockIndex,
+  known: ReadonlySet<string>,
+  lesson: string,
+): LessonUnlocks {
+  const teaching = new Set(index.course.lettersByLesson[lesson] ?? [])
+  const counts: LessonUnlocks = { syllables: 0, words: 0 }
+  if (teaching.size === 0) return counts
+
+  const becomesReadable = (item: UnlockItem): boolean => {
+    let missing = 0
+    for (const letter of item.letters) {
+      if (known.has(letter)) continue
+      if (!teaching.has(letter)) return false
+      missing += 1
+    }
+    return missing > 0
+  }
+
+  for (const item of index.syllables) if (becomesReadable(item)) counts.syllables += 1
+  for (const item of index.words) if (becomesReadable(item)) counts.words += 1
+  return counts
 }

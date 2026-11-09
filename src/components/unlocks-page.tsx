@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Circle } from "@/components/circle";
@@ -9,7 +9,14 @@ import { UnlockWord } from "@/components/unlock-word";
 import { useUnlocks } from "@/hooks/use-unlocks";
 import type { Level, Round } from "@/data/types";
 import { nextLesson } from "@/lib/resume";
-import { stateKey, type UnlockCounts, type UnlockItem, type UnlockState, type UnlockStatus } from "@/lib/unlocks";
+import {
+  gainForLesson,
+  stateKey,
+  type UnlockCounts,
+  type UnlockItem,
+  type UnlockState,
+  type UnlockStatus,
+} from "@/lib/unlocks";
 import { useUser } from "@/providers/user-store";
 import { cn } from "@/lib/utils";
 
@@ -42,9 +49,15 @@ export function UnlocksPage({ levels, rounds }: UnlocksPageProps) {
   const next = nextLesson(levels, user.latest);
   const nextRound = next ? rounds[`${next.level}.${next.round}`] : null;
   const nextLevel = next ? levels[String(next.level)] : null;
-  const upcoming = next
-    ? (index.byLesson[`${next.level}.${next.round}`] ?? { syllables: 0, words: 0 })
-    : { syllables: 0, words: 0 };
+  const nextLessonKey = next ? `${next.level}.${next.round}` : null;
+  // What the next lesson would actually hand over, given the letters known now.
+  const upcoming = useMemo(
+    () =>
+      nextLessonKey
+        ? gainForLesson(index, known, nextLessonKey)
+        : { syllables: 0, words: 0 },
+    [index, known, nextLessonKey],
+  );
   const show = (value: number | string) => (ready ? value : "—");
 
   const actions = (
@@ -152,9 +165,18 @@ export function UnlocksPage({ levels, rounds }: UnlocksPageProps) {
               </span>
             )}
             <span className="ml-[0.24rem]">
-              completes{" "}
-              <b className="text-brand-blue">{upcoming.syllables}</b> syllables and{" "}
-              <b className="text-brand-blue">{upcoming.words}</b> words.
+              {upcoming.syllables + upcoming.words > 0 ? (
+                <>
+                  completes{" "}
+                  <b className="text-brand-blue">{upcoming.syllables}</b> syllables and{" "}
+                  <b className="text-brand-blue">{upcoming.words}</b> words.
+                </>
+              ) : (
+                <>
+                  makes nothing new readable yet — what you have still needs
+                  letters from earlier lessons.
+                </>
+              )}
             </span>
           </p>
         ) : (

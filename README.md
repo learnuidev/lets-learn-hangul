@@ -203,8 +203,7 @@ from the saved profile:
   committed, like `course.ts`, and only the unlocks route imports it, so it rides in its own
   chunk instead of the shared bundle.
 - Each item stores the lesson that teaches the **last** of its letters — the lesson that makes
-  it readable. That one number orders the page (easiest first), fills the “Next up” line, and
-  powers the “They unlock *n* syllables” line on the round-complete screen.
+  it readable. That one number orders the page (easiest first) and groups the collection.
 - Cluster finals (ㄳ, ㄺ, ㅄ, …) are the one exception: the course never introduces them as
   letters — level 5 introduces them as *pronunciation* rules — so they are read as the two
   consonants they are built from (ㄺ needs ㄹ and ㄱ). Everything else waits for its own
@@ -215,8 +214,16 @@ from the saved profile:
   `getRomanizations`: it skips the regexps and the cartesian product of every acceptable
   spelling, which only the typing exercise needs — all 3,300 items cost ~10 ms instead of
   ~140 ms, without holding tens of thousands of candidate strings in memory.
-- Letters are read from `latest` **plus** every lesson completed at least once
-  (`stats.rounds[key].lessons > 0`), so re-reading an old round can never take a letter back.
+- **Only lessons actually finished teach letters** (`completedLessons` in `src/lib/lifetime.ts`):
+  `stats.rounds[key].lessons > 0`, plus `latest` for profiles saved before that record existed.
+  `latest` is *not* expanded into “every lesson before it” — nothing stops a learner from
+  opening a late round directly, and doing so must not credit them with the course ahead of
+  it. Finishing “Oppa!” from a fresh profile unlocks ㅃ·ㄸ·ㄲ, not the alphabet.
+- The two counters that mention a number (the round-complete “They unlock …” line and the
+  “Next up” line) go through `gainForLesson`, which asks what those letters make readable
+  against the letters known *now*. Taken in order that equals the lesson's own total; taken
+  out of order it reports what actually opened — and 0, with a pointer back to earlier
+  lessons, when nothing did.
 - Every block in the grid opens `/unlocks/blocks/$block` — the block big, its letters as
   discs, and every word it is spelled into, split into **Read now**, **One letter away** and
   **Still needs letters**. That split, and the highlighted block inside each word, come from
