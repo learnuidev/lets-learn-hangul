@@ -132,6 +132,10 @@ export interface UnlockIndex {
   readonly blockByInput: Record<string, UnlockItem>
   /** Block spelling → every word spelled with it, in index order. */
   readonly wordsForBlock: Record<string, readonly UnlockItem[]>
+  /** Letter → every syllable block spelled with it, for the letter's own page. */
+  readonly syllablesForLetter: Record<string, readonly UnlockItem[]>
+  /** Letter → every word spelled with it, in index order. */
+  readonly wordsForLetter: Record<string, readonly UnlockItem[]>
 }
 
 /** The lesson rank at which an item becomes readable; `Infinity` if never. */
@@ -202,6 +206,24 @@ function buildWords(course: CourseLetters): UnlockItem[] {
 let cached: { rounds: Record<string, Round>; index: UnlockIndex } | null = null
 
 /**
+ * The reverse of `letters`: letter → every item spelled with it, in index order.
+ *
+ * An item's `letters` are already deduplicated, so a block that spells the same
+ * letter twice (ㅎ in 헣) is listed under it once.
+ */
+function byLetter(items: readonly UnlockItem[]): Record<string, readonly UnlockItem[]> {
+  const buckets = new Map<string, UnlockItem[]>()
+  for (const item of items) {
+    for (const letter of item.letters) {
+      const list = buckets.get(letter)
+      if (list) list.push(item)
+      else buckets.set(letter, [item])
+    }
+  }
+  return Object.fromEntries(buckets)
+}
+
+/**
  * Every item, ordered by the lesson that completes it.
  *
  * Pure and memoised on the course itself — the same index serves every learner;
@@ -234,6 +256,8 @@ export function unlockIndex(rounds: Record<string, Round>): UnlockIndex {
     words,
     blockByInput,
     wordsForBlock: Object.fromEntries(buckets),
+    syllablesForLetter: byLetter(syllables),
+    wordsForLetter: byLetter(words),
   }
   cached = { rounds, index }
   return index

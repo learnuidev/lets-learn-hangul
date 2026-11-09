@@ -6,8 +6,11 @@ interface UnlockWordProps {
   state: UnlockState | undefined
   /** Letters the learner knows, for fading unreadable blocks inside the word. */
   known: ReadonlySet<string>
-  /** A block to call out — the one whose page this row is on. */
-  highlight?: string
+  /**
+   * Blocks to call out inside the spelling: one block's spelling on a block's
+   * page, or every block containing a letter on a letter's page.
+   */
+  highlight?: string | ReadonlySet<string>
 }
 
 /**
@@ -18,6 +21,11 @@ interface UnlockWordProps {
 export function UnlockWord({ item, state, known, highlight }: UnlockWordProps) {
   const status = state?.status ?? 'locked'
   const missing = state?.missing ?? []
+
+  const called =
+    typeof highlight === 'string'
+      ? (block: string) => block === highlight
+      : (block: string) => highlight?.has(block) === true
 
   return (
     <li className="flex items-baseline gap-[0.24rem] break-inside-avoid border-b border-ink/10 py-[0.09rem]">
@@ -32,7 +40,7 @@ export function UnlockWord({ item, state, known, highlight }: UnlockWordProps) {
             key={`${block}-${index}`}
             className={cn(
               'font-korean',
-              highlight === block
+              called(block)
                 ? 'text-brand-blue'
                 : canRead(block, known).readable
                   ? 'text-ink'

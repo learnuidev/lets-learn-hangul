@@ -3,8 +3,10 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Circle } from "@/components/circle";
 import { Figure } from "@/components/figure";
-import { JamoDisc } from "@/components/jamo-disc";
+import { JamoLink } from "@/components/jamo-link";
+import { Section } from "@/components/section";
 import { ShowMore } from "@/components/show-more";
+import { UnlockSyllable } from "@/components/unlock-syllable";
 import { UnlockWord } from "@/components/unlock-word";
 import { useUnlocks } from "@/hooks/use-unlocks";
 import type { Level, Round } from "@/data/types";
@@ -188,15 +190,19 @@ export function UnlocksPage({ levels, rounds }: UnlocksPageProps) {
       <Section title="Letters">
         <p className="m-0 mb-[0.3rem] text-[15px] leading-[20px] opacity-55">
           In the order the course introduces them. Each block and word below is
-          waiting on the letters still greyed out here.
+          waiting on the letters still greyed out here; open a letter to see
+          everything it spells.
         </p>
         <ul className="m-0 flex list-none flex-wrap gap-x-[0.16rem] gap-y-[0.2rem] pl-0">
           {progress.letters.map((letter, i) => (
             <li key={letter.letter}>
-              <JamoDisc
+              <JamoLink
                 letter={letter.letter}
                 known={letter.known}
                 delay={letter.known ? 0.02 * i : false}
+                title={`${letter.letter} — ${
+                  index.syllablesForLetter[letter.letter]?.length ?? 0
+                } syllables, ${index.wordsForLetter[letter.letter]?.length ?? 0} words`}
               />
             </li>
           ))}
@@ -233,25 +239,6 @@ export function UnlocksPage({ levels, rounds }: UnlocksPageProps) {
         .
       </p>
     </>
-  );
-}
-
-/**
- * A titled block under the stage, aligned with the title disc like the stats
- * page's sections so every "data" screen reads as one column.
- */
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="mt-[1.1rem] max-w-[760px] pl-[150px] tablet-down:mt-[1.2rem] tablet-down:max-w-none tablet-down:pr-[1.1rem] tablet-down:pl-[2.8rem]">
-      <label className="mb-[0.1rem] text-brand-blue">{title}</label>
-      {children}
-    </section>
   );
 }
 
@@ -367,64 +354,13 @@ function SyllableSection({
       <FilterRow value={filter} counts={counts} onChange={setFilter} label="Filter syllables" />
       <Legend />
       <ul className="m-0 flex list-none flex-wrap gap-x-[0.1rem] gap-y-[0.24rem] pl-0">
-        {visible.map((item) => {
-          const state = states[stateKey("syllable", item.input)];
-          const status = state?.status ?? "locked";
-          return (
-            <li key={item.input}>
-              <Link
-                to="/unlocks/blocks/$block"
-                params={{ block: item.input }}
-                title={`${item.input} — ${item.roman} — ${item.en}${
-                  status === "full" ? "" : ` · needs ${(state?.missing ?? []).join(" ")}`
-                }`}
-                className={cn(
-                  "group/block flex w-[1.34rem] flex-col items-center rounded-[4px] outline-none",
-                  "transition-colors hover:bg-white/70 focus-visible:ring-[3px] focus-visible:ring-brand-blue/40",
-                )}
-              >
-                <span className="relative block h-[0.92rem] w-[0.92rem]">
-                  <Circle
-                    fill={status === "locked" ? "#e7e0d1" : "white"}
-                    className="absolute top-0 left-0 h-full w-full"
-                  />
-                  <span
-                    className={cn(
-                      "relative z-1 flex h-full w-full items-center justify-center font-korean text-[0.4rem] leading-none font-bold",
-                      status === "full"
-                        ? "text-ink"
-                        : status === "partial"
-                          ? "text-ink/45"
-                          : "text-ink/30",
-                    )}
-                  >
-                    {item.input}
-                  </span>
-                </span>
-                <span
-                  className={cn(
-                    "mt-[0.04rem] w-full truncate text-center text-[12px] leading-[13px] font-semibold",
-                    status === "full"
-                      ? "text-brand-blue/75"
-                      : "text-brand-blue/35",
-                    "transition-colors group-hover/block:text-brand-blue",
-                  )}
-                >
-                  {item.roman}
-                </span>
-                <span
-                  className={cn(
-                    "w-full truncate text-center text-[11px] leading-[13px] tablet-down:text-[10px]",
-                    status === "full" ? "opacity-45" : "opacity-25",
-                    "transition-opacity group-hover/block:opacity-70",
-                  )}
-                >
-                  {item.en}
-                </span>
-              </Link>
-            </li>
-          );
-        })}
+        {visible.map((item) => (
+          <UnlockSyllable
+            key={item.input}
+            item={item}
+            state={states[stateKey("syllable", item.input)]}
+          />
+        ))}
       </ul>
       <ShowMore
         step={SYLLABLE_PAGE}

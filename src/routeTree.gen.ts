@@ -20,6 +20,7 @@ import { Route as LevelLevelRouteImport } from './routes/level.$level'
 import { Route as UnlocksIndexRouteImport } from './routes/unlocks.index'
 import { Route as LevelLevelIndexRouteImport } from './routes/level.$level.index'
 import { Route as UnlocksBlocksBlockRouteImport } from './routes/unlocks.blocks.$block'
+import { Route as UnlocksLettersLetterRouteImport } from './routes/unlocks.letters.$letter'
 import { Route as LevelLevelCompleteIndexRouteImport } from './routes/level.$level.complete.index'
 import { Route as LevelLevelCompleteLevelCompleteRouteImport } from './routes/level.$level.complete.$levelComplete'
 import { Route as LevelLevelIntroLevelIntroRouteImport } from './routes/level.$level.intro.$levelIntro'
@@ -93,6 +94,11 @@ const LevelLevelIndexRoute = LevelLevelIndexRouteImport.update({
 const UnlocksBlocksBlockRoute = UnlocksBlocksBlockRouteImport.update({
   id: '/unlocks/blocks/$block',
   path: '/unlocks/blocks/$block',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnlocksLettersLetterRoute = UnlocksLettersLetterRouteImport.update({
+  id: '/unlocks/letters/$letter',
+  path: '/unlocks/letters/$letter',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LevelLevelCompleteIndexRoute = LevelLevelCompleteIndexRouteImport.update({
@@ -219,6 +225,7 @@ export interface FileRoutesByFullPath {
   '/level/$level': typeof LevelLevelRouteWithChildren
   '/unlocks/': typeof UnlocksIndexRoute
   '/unlocks/blocks/$block': typeof UnlocksBlocksBlockRoute
+  '/unlocks/letters/$letter': typeof UnlocksLettersLetterRoute
   '/level/$level/': typeof LevelLevelIndexRoute
   '/level/$level/complete/$levelComplete': typeof LevelLevelCompleteLevelCompleteRoute
   '/level/$level/intro/$levelIntro': typeof LevelLevelIntroLevelIntroRoute
@@ -250,6 +257,7 @@ export interface FileRoutesByTo {
   '/stats': typeof StatsRoute
   '/unlocks': typeof UnlocksIndexRoute
   '/unlocks/blocks/$block': typeof UnlocksBlocksBlockRoute
+  '/unlocks/letters/$letter': typeof UnlocksLettersLetterRoute
   '/level/$level': typeof LevelLevelIndexRoute
   '/level/$level/complete/$levelComplete': typeof LevelLevelCompleteLevelCompleteRoute
   '/level/$level/intro/$levelIntro': typeof LevelLevelIntroLevelIntroRoute
@@ -282,6 +290,7 @@ export interface FileRoutesById {
   '/level/$level': typeof LevelLevelRouteWithChildren
   '/unlocks/': typeof UnlocksIndexRoute
   '/unlocks/blocks/$block': typeof UnlocksBlocksBlockRoute
+  '/unlocks/letters/$letter': typeof UnlocksLettersLetterRoute
   '/level/$level/': typeof LevelLevelIndexRoute
   '/level/$level/complete/$levelComplete': typeof LevelLevelCompleteLevelCompleteRoute
   '/level/$level/intro/$levelIntro': typeof LevelLevelIntroLevelIntroRoute
@@ -316,6 +325,7 @@ export interface FileRouteTypes {
     | '/level/$level'
     | '/unlocks/'
     | '/unlocks/blocks/$block'
+    | '/unlocks/letters/$letter'
     | '/level/$level/'
     | '/level/$level/complete/$levelComplete'
     | '/level/$level/intro/$levelIntro'
@@ -347,6 +357,7 @@ export interface FileRouteTypes {
     | '/stats'
     | '/unlocks'
     | '/unlocks/blocks/$block'
+    | '/unlocks/letters/$letter'
     | '/level/$level'
     | '/level/$level/complete/$levelComplete'
     | '/level/$level/intro/$levelIntro'
@@ -378,6 +389,7 @@ export interface FileRouteTypes {
     | '/level/$level'
     | '/unlocks/'
     | '/unlocks/blocks/$block'
+    | '/unlocks/letters/$letter'
     | '/level/$level/'
     | '/level/$level/complete/$levelComplete'
     | '/level/$level/intro/$levelIntro'
@@ -411,6 +423,7 @@ export interface RootRouteChildren {
   LevelLevelRoute: typeof LevelLevelRouteWithChildren
   UnlocksIndexRoute: typeof UnlocksIndexRoute
   UnlocksBlocksBlockRoute: typeof UnlocksBlocksBlockRoute
+  UnlocksLettersLetterRoute: typeof UnlocksLettersLetterRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -490,6 +503,13 @@ declare module '@tanstack/react-router' {
       path: '/unlocks/blocks/$block'
       fullPath: '/unlocks/blocks/$block'
       preLoaderRoute: typeof UnlocksBlocksBlockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unlocks/letters/$letter': {
+      id: '/unlocks/letters/$letter'
+      path: '/unlocks/letters/$letter'
+      fullPath: '/unlocks/letters/$letter'
+      preLoaderRoute: typeof UnlocksLettersLetterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/level/$level/complete/': {
@@ -704,6 +724,7 @@ const rootRouteChildren: RootRouteChildren = {
   LevelLevelRoute: LevelLevelRouteWithChildren,
   UnlocksIndexRoute: UnlocksIndexRoute,
   UnlocksBlocksBlockRoute: UnlocksBlocksBlockRoute,
+  UnlocksLettersLetterRoute: UnlocksLettersLetterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

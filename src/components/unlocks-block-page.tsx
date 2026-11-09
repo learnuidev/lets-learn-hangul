@@ -1,15 +1,14 @@
-import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Circle } from "@/components/circle";
 import { Figure } from "@/components/figure";
-import { JamoDisc } from "@/components/jamo-disc";
-import { ShowMore } from "@/components/show-more";
-import { UnlockWord } from "@/components/unlock-word";
+import { JamoLink } from "@/components/jamo-link";
+import { Section } from "@/components/section";
+import { WordGroup } from "@/components/unlock-group";
 import { useUnlocks } from "@/hooks/use-unlocks";
 import type { Level, Round } from "@/data/types";
 import { nextLessonToTake, parseLessonKey } from "@/lib/resume";
-import { stateKey, type UnlockItem, type UnlockProgress } from "@/lib/unlocks";
+import { stateKey } from "@/lib/unlocks";
 import { cn } from "@/lib/utils";
 
 interface UnlocksBlockPageProps {
@@ -167,11 +166,12 @@ export function UnlocksBlockPage({ block, levels, rounds }: UnlocksBlockPageProp
         <ul className="m-0 flex list-none flex-wrap gap-x-[0.24rem] gap-y-[0.16rem] pl-0">
           {item.letters.map((letter, i) => (
             <li key={letter}>
-              <JamoDisc
+              <JamoLink
                 letter={letter}
                 known={progress.known.has(letter)}
                 delay={progress.known.has(letter) ? 0.04 * i : false}
                 size="large"
+                title={`${letter} — every block and word it spells`}
               />
             </li>
           ))}
@@ -213,9 +213,19 @@ export function UnlocksBlockPage({ block, levels, rounds }: UnlocksBlockPageProp
             ? "No word in the collection is spelled with this block on its own."
             : `${words.length} ${words.length === 1 ? "word uses" : "words use"} this block — ${read.length} readable now, ${almost.length} one letter away.`}
         </p>
-        <Group title="Read now" words={read} block={block} progress={progress} />
-        <Group title="One letter away" words={almost} block={block} progress={progress} />
-        <Group title="Still needs letters" words={rest} block={block} progress={progress} />
+        <WordGroup title="Read now" words={read} progress={progress} highlight={block} />
+        <WordGroup
+          title="One letter away"
+          words={almost}
+          progress={progress}
+          highlight={block}
+        />
+        <WordGroup
+          title="Still needs letters"
+          words={rest}
+          progress={progress}
+          highlight={block}
+        />
       </Section>
 
       <p className="mt-[1.6rem] border-t border-ink/10 pt-[0.5rem] pb-[20px] text-[14px] leading-[22px] opacity-50 tablet-down:mx-[1.1rem] tablet-down:pb-[60px]">
@@ -226,56 +236,6 @@ export function UnlocksBlockPage({ block, levels, rounds }: UnlocksBlockPageProp
         .
       </p>
     </>
-  );
-}
-
-/** How many rows of a group are listed before "Show more". */
-const GROUP_PAGE = 24;
-
-/** One of the three groups of words on a block's page. */
-function Group({
-  title,
-  words,
-  block,
-  progress,
-}: {
-  title: string;
-  words: readonly UnlockItem[];
-  block: string;
-  progress: UnlockProgress;
-}) {
-  const [limit, setLimit] = useState(GROUP_PAGE);
-
-  if (words.length === 0) return null;
-
-  const visible = words.slice(0, limit);
-
-  return (
-    <div className="mt-[0.4rem] first:mt-0">
-      <div className="flex items-baseline gap-[0.2rem]">
-        <span className="text-[12px] leading-[15px] font-bold uppercase tracking-[0.06em] opacity-45">
-          {title}
-        </span>
-        <span className="text-[11px] leading-[14px] uppercase opacity-25">{words.length}</span>
-      </div>
-      <ul className="m-0 list-none pl-0 wide:columns-2 wide:gap-[1.6rem]">
-        {visible.map((word) => (
-          <UnlockWord
-            key={word.input}
-            item={word}
-            state={progress.state[stateKey("word", word.input)]}
-            known={progress.known}
-            highlight={block}
-          />
-        ))}
-      </ul>
-      <ShowMore
-        step={GROUP_PAGE}
-        shown={visible.length}
-        total={words.length}
-        onMore={() => setLimit(limit + GROUP_PAGE)}
-      />
-    </div>
   );
 }
 
@@ -311,15 +271,5 @@ function UnlocksMissing({ block, total }: { block: string; total: number }) {
         </Button>
       </Section>
     </>
-  );
-}
-
-/** A titled block under the stage, aligned like the stats and unlocks pages. */
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="mt-[1.1rem] max-w-[760px] pl-[150px] tablet-down:mt-[1.2rem] tablet-down:max-w-none tablet-down:pr-[1.1rem] tablet-down:pl-[2.8rem]">
-      <label className="mb-[0.1rem] text-brand-blue">{title}</label>
-      {children}
-    </section>
   );
 }
