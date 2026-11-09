@@ -320,6 +320,12 @@ vercel.json                 # framework preset hint for Vercel
 
 - Progress is stored in `localStorage` under `lets-learn-hangul` and read after mount, so the
   server and client markup stay identical.
+- **A lesson counts once it has been finished**, everywhere: the course index dims every
+  lesson that is not in `completedLessons()`, except the earliest unfinished one — the lesson
+  the learner should take next. Finishing a late round out of order therefore lights up that
+  round and the gap, not the twenty-one lessons behind it. `nextLessonToTake()` in
+  `src/lib/resume.ts` is the single source of that target, so the index, the welcome-back
+  prompt, `/stats` and `/unlocks` cannot disagree about where a learner belongs.
 - Pressing <kbd>Enter</kbd> anywhere triggers the screen's primary action
   (`[data-autofocus]`), as in the original app.
 - Romanization accepts every valid reading of a word; after three misses on the same word the

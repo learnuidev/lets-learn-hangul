@@ -17,7 +17,7 @@ import {
   type RoundRecord,
 } from "@/lib/lifetime";
 import { useUser } from "@/providers/user-store";
-import { nextLesson } from "@/lib/resume";
+import { nextLessonToTake } from "@/lib/resume";
 import { cn } from "@/lib/utils";
 
 interface StatsPageProps {
@@ -68,7 +68,7 @@ export function StatsPage({ levels, rounds }: StatsPageProps) {
     totals.words + totals.misses + totals.quizCorrect + totals.quizWrong;
   const quizAttempts = totals.quizCorrect + totals.quizWrong;
   // Same destination as "Yes, keep going!" on the welcome-back prompt.
-  const next = user.latest ? nextLesson(levels, user.latest) : null;
+  const next = nextLessonToTake(levels, completedLessons(stats.rounds, user.latest));
   const show = (value: number | string) => (ready ? value : "—");
 
   const actions = (

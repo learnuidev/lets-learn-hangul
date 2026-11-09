@@ -1,7 +1,8 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import type { Level } from '@/data/types'
-import { nextLesson } from '@/lib/resume'
+import { completedLessons } from '@/lib/lifetime'
+import { nextLessonToTake } from '@/lib/resume'
 import { useUser } from '@/providers/user-store'
 
 interface ReturnVisitProps {
@@ -13,8 +14,8 @@ export function ReturnVisit({ levels }: ReturnVisitProps) {
   const navigate = useNavigate()
   const { user } = useUser()
 
-  // The lesson after the last completed one, shared with the stats page.
-  const next = nextLesson(levels, user.latest)
+  // The first lesson not yet finished, shared with the stats page and the index.
+  const next = nextLessonToTake(levels, completedLessons(user.stats.rounds, user.latest))
 
   return (
     <div className="return-visit relative h-full min-h-[600px] phone:min-h-[17rem]">

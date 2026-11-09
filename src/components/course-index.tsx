@@ -1,6 +1,8 @@
 import { Link } from '@tanstack/react-router'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
+import { completedLessons } from '@/lib/lifetime'
+import { courseOrder } from '@/lib/resume'
 import { useUser } from '@/providers/user-store'
 import type { Level, Round } from '@/data/types'
 import { cn } from '@/lib/utils'
@@ -14,27 +16,20 @@ interface CourseIndexProps {
 export function CourseIndex({ levels, rounds }: CourseIndexProps) {
   const { indexShowing, hideIndex, user } = useUser()
 
-  // Progress is compared as an integer index (level * 100 + round) so that
-  // "1.10" and float rounding can never make two lessons look equivalent.
-  const [latestLevel, latestRound] = (user.latest ?? '1.1')
-    .split('.')
-    .map((part) => Number.parseInt(part, 10) || 1)
-  const latestIndex = latestLevel * 100 + latestRound
+  // What the learner has actually finished — the same rule the unlocks page
+  // uses. "Furthest lesson reached" is deliberately not used here: opening a
+  // late round directly must not mark everything before it as done.
+  const done = completedLessons(user.stats.rounds, user.latest)
+  const order = courseOrder(levels)
 
-  const roundCount = (level: number) =>
-    Object.keys(rounds).filter((key) => key.startsWith(`${level}.`)).length
+  /** The one unfinished lesson on offer: the earliest gap in the course. */
+  const frontier = order.find((key) => !done.has(key)) ?? null
 
-  /** A level opens once the level before it is finished. */
-  const isLevelLocked = (level: number) =>
-    level > 1 && (level - 1) * 100 + roundCount(level - 1) > latestIndex
+  /** Dimmed unless it is finished, or it is the gap the learner should fill. */
+  const isRoundLocked = (key: string) => !done.has(key) && key !== frontier
 
-  /** Within a level you may open the round you are on and the next one. */
-  const isRoundLocked = (level: number, round: number) => {
-    if (isLevelLocked(level)) return true
-    // A level that just opened starts at its first round.
-    if (level > latestLevel) return round > 1
-    return level * 100 + round > latestIndex + 1
-  }
+  /** A level stays lit while it still holds a finished lesson or that gap. */
+  const isLevelLocked = (level: Level) => level.rounds.every(isRoundLocked)
 
   return (
     <Dialog open={indexShowing} onOpenChange={(open) => !open && hideIndex()} modal={false}>
@@ -62,7 +57,7 @@ export function CourseIndex({ levels, rounds }: CourseIndexProps) {
 
         <div className="course-index__levels tablet-down:pt-[40px] desktop:flex desktop:pt-[80px] desktop:pr-0 desktop:pb-[10px] desktop:pl-[80px]">
           {Object.values(levels).map((level) => {
-            const levelLocked = isLevelLocked(Number(level.level))
+            const levelLocked = isLevelLocked(level)
             return (
             <div
               className={cn(
@@ -85,14 +80,14 @@ export function CourseIndex({ levels, rounds }: CourseIndexProps) {
                     <div
                       className={cn(
                         'course-index__round',
-                        isRoundLocked(Number(level.level), round.round) && 'incomplete',
+                        isRoundLocked(roundKey) && 'incomplete',
                       )}
                       key={roundKey}
                     >
                       <RoundName
                         level={level}
                         round={round}
-                        locked={isRoundLocked(Number(level.level), round.round)}
+                        locked={isRoundLocked(roundKey)}
                         onNavigate={hideIndex}
                       />
                     </div>

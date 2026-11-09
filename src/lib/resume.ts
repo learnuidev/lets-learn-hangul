@@ -6,32 +6,46 @@ export interface LessonTarget {
   round: number
 }
 
+/** `"1.10"` sorts after `"1.9"`, which plain string compares get wrong. */
+export function parseLessonKey(key: string): [number, number] {
+  const [level, round] = key.split('.')
+  return [Number.parseInt(level ?? '0', 10) || 0, Number.parseInt(round ?? '0', 10) || 0]
+}
+
+export function compareLessonKeys(a: string, b: string): number {
+  const [aLevel, aRound] = parseLessonKey(a)
+  const [bLevel, bRound] = parseLessonKey(b)
+  return aLevel - bLevel || aRound - bRound
+}
+
+/** Every lesson key (`"1.1"` … `"5.6"`), in course order. */
+export function courseOrder(levels: Record<string, Level>): string[] {
+  return Object.values(levels)
+    .sort((a, b) => a.level - b.level)
+    .flatMap((level) => level.rounds)
+}
+
 /**
- * The lesson "keep going" opens: the round after the last one completed,
- * rolling over into the next level, or `null` when there is nothing left.
+ * Where the learner belongs: the **first lesson in the course they have not
+ * finished**.
  *
- * The welcome-back prompt and the stats page both resume through this function
- * so the two entry points can never disagree about where a learner belongs.
+ * This is the earliest gap rather than the lesson after the furthest one
+ * reached, because those two only agree while the course is taken in order —
+ * and nothing stops someone opening a late round directly. Finishing "Oppa!"
+ * from a fresh profile leaves twenty-one lessons unfinished, so the frontier is
+ * still lesson one, and the course index dims everything the learner has not
+ * actually done.
+ *
+ * `null` means the course is finished.
  */
-export function nextLesson(
+export function nextLessonToTake(
   levels: Record<string, Level>,
-  latest: string | null,
+  done: ReadonlySet<string>,
 ): LessonTarget | null {
-  if (!latest) return { level: 1, round: 1 }
-
-  const [levelPart, roundPart] = latest.split('.').map((n) => Number.parseInt(n, 10))
-  if (!Number.isFinite(levelPart) || !Number.isFinite(roundPart)) {
-    return { level: 1, round: 1 }
+  for (const key of courseOrder(levels)) {
+    if (done.has(key)) continue
+    const [level, round] = parseLessonKey(key)
+    return { level, round }
   }
-
-  let nextLevel = levelPart
-  let nextRound = roundPart + 1
-
-  const level = levels[String(nextLevel)]
-  if (level && nextRound >= level.rounds.length) {
-    nextLevel += 1
-    nextRound = 1
-  }
-
-  return levels[String(nextLevel)] ? { level: nextLevel, round: nextRound } : null
+  return null
 }

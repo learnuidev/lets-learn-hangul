@@ -8,7 +8,7 @@ import { ShowMore } from "@/components/show-more";
 import { UnlockWord } from "@/components/unlock-word";
 import { useUnlocks } from "@/hooks/use-unlocks";
 import type { Level, Round } from "@/data/types";
-import { nextLesson } from "@/lib/resume";
+import { nextLessonToTake } from "@/lib/resume";
 import {
   gainForLesson,
   stateKey,
@@ -17,7 +17,6 @@ import {
   type UnlockState,
   type UnlockStatus,
 } from "@/lib/unlocks";
-import { useUser } from "@/providers/user-store";
 import { cn } from "@/lib/utils";
 
 interface UnlocksPageProps {
@@ -43,10 +42,9 @@ type Filter = "all" | UnlockStatus;
  */
 export function UnlocksPage({ levels, rounds }: UnlocksPageProps) {
   const { index, progress, ready } = useUnlocks(rounds);
-  const { user } = useUser();
 
   const known = progress.known;
-  const next = nextLesson(levels, user.latest);
+  const next = nextLessonToTake(levels, progress.done);
   const nextRound = next ? rounds[`${next.level}.${next.round}`] : null;
   const nextLevel = next ? levels[String(next.level)] : null;
   const nextLessonKey = next ? `${next.level}.${next.round}` : null;

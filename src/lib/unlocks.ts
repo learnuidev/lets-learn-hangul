@@ -21,6 +21,7 @@
 import { koreanComponents, koreanWords } from '@/data/korean'
 import type { Round } from '@/data/types'
 import { completedLessons, type RoundRecord } from './lifetime'
+import { compareLessonKeys } from './resume'
 import { decompose, decomposeDoubleJamo } from './hangul'
 import { romanizeIdeal } from './romanize'
 
@@ -91,18 +92,6 @@ export interface CourseLetters {
   readonly rank: Record<string, number>
   /** Lesson key → the letters that lesson introduces, as `jamo` lists them. */
   readonly lettersByLesson: Record<string, readonly string[]>
-}
-
-/** `"1.10"` sorts after `"1.9"`, which plain string compares get wrong. */
-export function parseLessonKey(key: string): [number, number] {
-  const [level, round] = key.split('.')
-  return [Number.parseInt(level ?? '0', 10) || 0, Number.parseInt(round ?? '0', 10) || 0]
-}
-
-export function compareLessonKeys(a: string, b: string): number {
-  const [aLevel, aRound] = parseLessonKey(a)
-  const [bLevel, bRound] = parseLessonKey(b)
-  return aLevel - bLevel || aRound - bRound
 }
 
 export function courseLetters(rounds: Record<string, Round>): CourseLetters {

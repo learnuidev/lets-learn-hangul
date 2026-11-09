@@ -8,14 +8,8 @@ import { ShowMore } from "@/components/show-more";
 import { UnlockWord } from "@/components/unlock-word";
 import { useUnlocks } from "@/hooks/use-unlocks";
 import type { Level, Round } from "@/data/types";
-import { nextLesson } from "@/lib/resume";
-import {
-  parseLessonKey,
-  stateKey,
-  type UnlockItem,
-  type UnlockProgress,
-} from "@/lib/unlocks";
-import { useUser } from "@/providers/user-store";
+import { nextLessonToTake, parseLessonKey } from "@/lib/resume";
+import { stateKey, type UnlockItem, type UnlockProgress } from "@/lib/unlocks";
 import { cn } from "@/lib/utils";
 
 interface UnlocksBlockPageProps {
@@ -35,11 +29,10 @@ interface UnlocksBlockPageProps {
  */
 export function UnlocksBlockPage({ block, levels, rounds }: UnlocksBlockPageProps) {
   const { index, progress, ready } = useUnlocks(rounds);
-  const { user } = useUser();
 
   const item = index.blockByInput[block];
   const show = (value: number | string) => (ready ? value : "—");
-  const next = nextLesson(levels, user.latest);
+  const next = nextLessonToTake(levels, progress.done);
 
   if (!item) {
     return (
