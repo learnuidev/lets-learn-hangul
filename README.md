@@ -252,6 +252,12 @@ from the saved profile:
   still missing in red beside the CEFR band. "Show more" moves in whole rows, 100 words and 80
   blocks at a time. Prose inside a wide section is capped at 640px (`SectionProse`) so the
   line length stays readable.
+- Two independent filters (`src/components/filters.tsx`): the **state** pills (All / Read /
+  Half-read / Locked) above the list, and a **CEFR level** dropdown (`LevelSelect`,
+  A1/A2/B1/B2) at the right-hand end of the Words title row. Their counts always describe the
+  whole collection — picking a level leaves the pills' numbers alone, and picking a state
+  leaves the dropdown's alone; the two simply combine over the grid. The level dropdown is
+  also on a letter's and a block's page, over that page's own words.
 - Every letter in that grid opens `/unlocks/letters/$letter` — the same stage and the same three-way
   split, asked of a letter instead: the blocks and words spelled with it (**Read now**,
   **One letter away** — only this letter is holding them back — and **Still needs letters**),

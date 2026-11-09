@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Circle } from "@/components/circle";
 import { Figure } from "@/components/figure";
+import { ALL_LEVELS, LevelSelect, matchesLevel } from "@/components/filters";
 import { JamoLink } from "@/components/jamo-link";
 import { Section, SectionProse } from "@/components/section";
 import { SyllableGroup, WordGroup } from "@/components/unlock-group";
@@ -25,6 +27,10 @@ export function UnlocksLetterPage({ letter, levels, rounds }: UnlocksLetterPageP
 
   const show = (value: number | string) => (ready ? value : "—");
   const next = nextLessonToTake(levels, progress.done);
+
+  // Declared before the early return below, so the hook order is the same for
+  // every letter — including one the course never teaches.
+  const [level, setLevel] = useState<string>(ALL_LEVELS);
 
   const entry = progress.letters.find((item) => item.letter === letter);
   if (!entry) {
@@ -66,8 +72,10 @@ export function UnlocksLetterPage({ letter, levels, rounds }: UnlocksLetterPageP
     return groups;
   };
 
+  const bandedWords = words.filter((word) => matchesLevel(word, level));
+
   const syllableGroups = split(syllables, "syllable");
-  const wordGroups = split(words, "word");
+  const wordGroups = split(bandedWords, "word");
   const almost = syllableGroups.almost.length + wordGroups.almost.length;
 
   // Which blocks carry this letter — the ones each word calls out in blue.
@@ -239,11 +247,15 @@ export function UnlocksLetterPage({ letter, levels, rounds }: UnlocksLetterPageP
         />
       </Section>
 
-      <Section title={`Words with ${letter}`} wide>
+      <Section
+        title={`Words with ${letter}`}
+        wide
+        controls={<LevelSelect words={words} value={level} onChange={setLevel} />}
+      >
         <SectionProse className="mb-[0.4rem]">
           {words.length === 0
             ? "No word in the collection is spelled with this letter."
-            : `${words.length} ${words.length === 1 ? "word uses" : "words use"} this letter — ${show(wordGroups.read.length)} readable now, ${show(wordGroups.almost.length)} one letter away.`}
+            : `${bandedWords.length} ${bandedWords.length === 1 ? "word uses" : "words use"} this letter — ${show(wordGroups.read.length)} readable now, ${show(wordGroups.almost.length)} one letter away.`}
         </SectionProse>
         <WordGroup
           title="Read now"
@@ -263,6 +275,11 @@ export function UnlocksLetterPage({ letter, levels, rounds }: UnlocksLetterPageP
           progress={progress}
           highlight={blocksWithLetter}
         />
+        {bandedWords.length === 0 && (
+          <p className="m-0 py-[0.2rem] text-[15px] leading-[20px] opacity-45">
+            No words at this level use {letter}.
+          </p>
+        )}
       </Section>
 
       <p className="mt-[1.6rem] border-t border-ink/10 pt-[0.5rem] pb-[20px] text-[14px] leading-[22px] opacity-50 tablet-down:mx-[1.1rem] tablet-down:pb-[60px]">

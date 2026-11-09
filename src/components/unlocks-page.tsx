@@ -3,6 +3,13 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Circle } from "@/components/circle";
 import { Figure } from "@/components/figure";
+import {
+  ALL_LEVELS,
+  FilterPills,
+  LevelSelect,
+  matchesLevel,
+  type FilterOption,
+} from "@/components/filters";
 import { Section, SectionProse } from "@/components/section";
 import { ShowMore } from "@/components/show-more";
 import { UnlockLettersTable } from "@/components/unlock-letters-table";
@@ -241,48 +248,14 @@ export function UnlocksPage({ levels, rounds }: UnlocksPageProps) {
   );
 }
 
-/** The pill row that switches which state a collection shows. */
-function FilterRow({
-  value,
-  counts,
-  onChange,
-  label,
-}: {
-  value: Filter;
-  counts: UnlockCounts;
-  onChange: (next: Filter) => void;
-  label: string;
-}) {
-  const options: { value: Filter; label: string; count: number }[] = [
+/** The state filter's options, with the counts of the subset it is applied to. */
+function stateOptions(counts: UnlockCounts): FilterOption[] {
+  return [
     { value: "all", label: "All", count: counts.total },
     { value: "full", label: "Read", count: counts.full },
     { value: "partial", label: "Half-read", count: counts.partial },
     { value: "locked", label: "Locked", count: counts.locked },
   ];
-
-  return (
-    <div className="mb-[0.32rem] flex flex-wrap items-center gap-[0.1rem]" role="group" aria-label={label}>
-      {options.map((option) => {
-        const active = option.value === value;
-        return (
-          <button
-            key={option.value}
-            type="button"
-            aria-pressed={active}
-            onClick={() => onChange(option.value)}
-            className={cn(
-              "rounded-[4px] px-[9px] py-[4px] text-[12px] leading-[15px] font-bold uppercase tracking-[0.06em]",
-              "outline-none transition-colors focus-visible:ring-[3px] focus-visible:ring-brand-blue/40",
-              active ? "bg-brand-blue-soft text-brand-blue" : "text-ink/40 hover:text-ink/70",
-            )}
-          >
-            {option.label}
-            <span className="ml-[3px] opacity-60">{option.count}</span>
-          </button>
-        );
-      })}
-    </div>
-  );
 }
 
 /** A one-line key to the three states, using the same discs as the collection. */
@@ -350,7 +323,16 @@ function SyllableSection({
         it is spelled with has come up in a lesson; open one to see the words it
         appears in.
       </SectionProse>
-      <FilterRow value={filter} counts={counts} onChange={setFilter} label="Filter syllables" />
+      <FilterPills
+        options={stateOptions(counts)}
+        value={filter}
+        onChange={(next) => {
+          setFilter(next as Filter);
+          setLimit(SYLLABLE_PAGE);
+        }}
+        label="Filter syllables"
+        className="mb-[0.32rem]"
+      />
       <Legend />
       <ul className="m-0 flex list-none flex-wrap pl-0">
         {visible.map((item) => (
@@ -385,23 +367,50 @@ function WordSection({
   ready: boolean;
 }) {
   const [filter, setFilter] = useState<Filter>("all");
+  const [level, setLevel] = useState<string>(ALL_LEVELS);
   const [limit, setLimit] = useState(WORD_PAGE);
 
-  const filtered =
+  // The state pills always describe the whole collection; the level dropdown
+  // describes whatever state is selected, so "Locked" can tell you how much of
+  // it is A1 and how much is B2. The grid is the intersection of the two.
+  const byState =
     filter === "all"
       ? items
       : items.filter((item) => states[stateKey("word", item.input)]?.status === filter);
+  const filtered = byState.filter((item) => matchesLevel(item, level));
   const visible = filtered.slice(0, limit);
 
   return (
-    <Section title="Words" wide>
+    <Section
+      title="Words"
+      wide
+      controls={
+        <LevelSelect
+          words={byState}
+          value={level}
+          onChange={(next) => {
+            setLevel(next);
+            setLimit(WORD_PAGE);
+          }}
+        />
+      }
+    >
       <SectionProse className="mb-[0.3rem]">
         {ready ? banner(counts) : "Reading your saved progress…"} — pronunciation in
         blue, meaning after it, and the letters still missing in red along the
         bottom. Syllables you can already read stay dark; the pale ones are still
         waiting on a letter.
       </SectionProse>
-      <FilterRow value={filter} counts={counts} onChange={setFilter} label="Filter words" />
+      <FilterPills
+        options={stateOptions(counts)}
+        value={filter}
+        onChange={(next) => {
+          setFilter(next as Filter);
+          setLimit(WORD_PAGE);
+        }}
+        label="Filter words"
+        className="mb-[0.32rem]"
+      />
       <ul className="m-0 flex list-none flex-wrap pl-0">
         {visible.map((item) => (
           <UnlockWord
@@ -412,6 +421,11 @@ function WordSection({
           />
         ))}
       </ul>
+      {filtered.length === 0 && (
+        <p className="m-0 py-[0.3rem] text-[15px] leading-[20px] opacity-45">
+          No words match those filters.
+        </p>
+      )}
       <ShowMore
         step={WORD_PAGE}
         shown={visible.length}

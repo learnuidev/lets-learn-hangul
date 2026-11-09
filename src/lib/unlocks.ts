@@ -293,6 +293,24 @@ export function canRead(
   return { readable: missing.length === 0, missing }
 }
 
+/**
+ * The CEFR bands present in a set of words, easiest first, with how many words
+ * carry each.
+ *
+ * Two entries in the dataset have no band at all, so they only ever show under
+ * "all" — every other word is A1, A2, B1 or B2.
+ */
+export function levelsOf(items: readonly UnlockItem[]): { level: string; count: number }[] {
+  const counts = new Map<string, number>()
+  for (const item of items) {
+    if (!item.level) continue
+    counts.set(item.level, (counts.get(item.level) ?? 0) + 1)
+  }
+  return Array.from(counts, ([level, count]) => ({ level, count })).sort((a, b) =>
+    a.level < b.level ? -1 : a.level > b.level ? 1 : 0,
+  )
+}
+
 /** The lesson whose single letter would complete the most half-read items. */
 export interface NextUnlock {
   letter: string

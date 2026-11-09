@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Circle } from "@/components/circle";
 import { Figure } from "@/components/figure";
+import { ALL_LEVELS, LevelSelect, matchesLevel } from "@/components/filters";
 import { JamoLink } from "@/components/jamo-link";
 import { Section, SectionProse } from "@/components/section";
 import { WordGroup } from "@/components/unlock-group";
@@ -33,6 +35,10 @@ export function UnlocksBlockPage({ block, levels, rounds }: UnlocksBlockPageProp
   const show = (value: number | string) => (ready ? value : "—");
   const next = nextLessonToTake(levels, progress.done);
 
+  // Declared before the early return below, so the hook order is the same for a
+  // block that is in the collection and one that is not.
+  const [level, setLevel] = useState<string>(ALL_LEVELS);
+
   if (!item) {
     return (
       <UnlocksMissing block={block} total={index.syllables.length} />
@@ -43,7 +49,8 @@ export function UnlocksBlockPage({ block, levels, rounds }: UnlocksBlockPageProp
   const status = state?.status ?? "locked";
   const missing = state?.missing ?? [];
 
-  const words = index.wordsForBlock[block] ?? [];
+  const allWords = index.wordsForBlock[block] ?? [];
+  const words = allWords.filter((word) => matchesLevel(word, level));
   const read = words.filter(
     (word) => progress.state[stateKey("word", word.input)]?.status === "full",
   );
@@ -207,9 +214,13 @@ export function UnlocksBlockPage({ block, levels, rounds }: UnlocksBlockPageProp
         </p>
       </Section>
 
-      <Section title={`Words with ${block}`} wide>
+      <Section
+        title={`Words with ${block}`}
+        wide
+        controls={<LevelSelect words={allWords} value={level} onChange={setLevel} />}
+      >
         <SectionProse className="mb-[0.4rem]">
-          {words.length === 0
+          {allWords.length === 0
             ? "No word in the collection is spelled with this block on its own."
             : `${words.length} ${words.length === 1 ? "word uses" : "words use"} this block — ${read.length} readable now, ${almost.length} one letter away.`}
         </SectionProse>
@@ -226,6 +237,11 @@ export function UnlocksBlockPage({ block, levels, rounds }: UnlocksBlockPageProp
           progress={progress}
           highlight={block}
         />
+        {allWords.length > 0 && words.length === 0 && (
+          <p className="m-0 py-[0.2rem] text-[15px] leading-[20px] opacity-45">
+            No words at this level use {block}.
+          </p>
+        )}
       </Section>
 
       <p className="mt-[1.6rem] border-t border-ink/10 pt-[0.5rem] pb-[20px] text-[14px] leading-[22px] opacity-50 tablet-down:mx-[1.1rem] tablet-down:pb-[60px]">
