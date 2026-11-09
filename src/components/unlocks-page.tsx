@@ -3,12 +3,13 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Circle } from "@/components/circle";
 import { Figure } from "@/components/figure";
-import { JamoLink } from "@/components/jamo-link";
-import { Section } from "@/components/section";
+import { Section, SectionProse } from "@/components/section";
 import { ShowMore } from "@/components/show-more";
+import { UnlockLettersTable } from "@/components/unlock-letters-table";
 import { UnlockSyllable } from "@/components/unlock-syllable";
 import { UnlockWord } from "@/components/unlock-word";
 import { useUnlocks } from "@/hooks/use-unlocks";
+import { geometric } from "@/data/geometric";
 import type { Level, Round } from "@/data/types";
 import { nextLessonToTake } from "@/lib/resume";
 import {
@@ -26,9 +27,12 @@ interface UnlocksPageProps {
   rounds: Record<string, Round>;
 }
 
-/** How many items one "Show more" step adds. */
-const SYLLABLE_PAGE = 96;
-const WORD_PAGE = 60;
+/**
+ * How many cells one "Show more" step adds — whole rows of the 100px module.
+ * Words come 100 at a time.
+ */
+const SYLLABLE_PAGE = 80;
+const WORD_PAGE = 100;
 
 type Filter = "all" | UnlockStatus;
 
@@ -155,9 +159,9 @@ export function UnlocksPage({ levels, rounds }: UnlocksPageProps) {
         {actions}
       </div>
 
-      <Section title="Next up">
+      <Section title="Next up" wide>
         {next && nextRound && nextLevel ? (
-          <p className="m-0">
+          <p className="m-0 max-w-[640px]">
             <b className="uppercase">{nextLevel.name}</b> · {nextRound.name}
             {(nextRound.jamo ?? []).length > 0 && (
               <span className="ml-[0.24rem] font-korean text-[0.5rem] opacity-70">
@@ -180,33 +184,28 @@ export function UnlocksPage({ levels, rounds }: UnlocksPageProps) {
             </span>
           </p>
         ) : (
-          <p className="m-0">
+          <p className="m-0 max-w-[640px]">
             Every letter is learned, so all {index.syllables.length} syllables and{" "}
             {index.words.length} words are readable.
           </p>
         )}
       </Section>
 
-      <Section title="Letters">
-        <p className="m-0 mb-[0.3rem] text-[15px] leading-[20px] opacity-55">
-          In the order the course introduces them. Each block and word below is
-          waiting on the letters still greyed out here; open a letter to see
-          everything it spells.
-        </p>
-        <ul className="m-0 flex list-none flex-wrap gap-x-[0.16rem] gap-y-[0.2rem] pl-0">
-          {progress.letters.map((letter, i) => (
-            <li key={letter.letter}>
-              <JamoLink
-                letter={letter.letter}
-                known={letter.known}
-                delay={letter.known ? 0.02 * i : false}
-                title={`${letter.letter} — ${
-                  index.syllablesForLetter[letter.letter]?.length ?? 0
-                } syllables, ${index.wordsForLetter[letter.letter]?.length ?? 0} words`}
-              />
-            </li>
-          ))}
-        </ul>
+      <Section title="Letters" wide>
+        <SectionProse className="mb-[0.3rem]">
+          The whole alphabet, as the end of a round lays it out. Letters you have
+          finished the lesson for are lit; the rest are still ghosts. Hover one to
+          see how it sounds, or open it to see everything it spells.
+        </SectionProse>
+        <UnlockLettersTable
+          geometric={geometric}
+          known={known}
+          title={(letter) =>
+            `${letter} — ${index.syllablesForLetter[letter]?.length ?? 0} syllables, ${
+              index.wordsForLetter[letter]?.length ?? 0
+            } words`
+          }
+        />
       </Section>
 
       <SyllableSection
@@ -344,16 +343,16 @@ function SyllableSection({
   const visible = filtered.slice(0, limit);
 
   return (
-    <Section title="Syllable blocks">
-      <p className="m-0 mb-[0.3rem] text-[15px] leading-[20px] opacity-55">
+    <Section title="Syllable blocks" wide>
+      <SectionProse className="mb-[0.3rem]">
         {ready ? banner(counts) : "Reading your saved progress…"} — the blue line
         under each block is how it sounds. A block turns white once every letter
         it is spelled with has come up in a lesson; open one to see the words it
         appears in.
-      </p>
+      </SectionProse>
       <FilterRow value={filter} counts={counts} onChange={setFilter} label="Filter syllables" />
       <Legend />
-      <ul className="m-0 flex list-none flex-wrap gap-x-[0.1rem] gap-y-[0.24rem] pl-0">
+      <ul className="m-0 flex list-none flex-wrap pl-0">
         {visible.map((item) => (
           <UnlockSyllable
             key={item.input}
@@ -395,14 +394,15 @@ function WordSection({
   const visible = filtered.slice(0, limit);
 
   return (
-    <Section title="Words">
-      <p className="m-0 mb-[0.3rem] text-[15px] leading-[20px] opacity-55">
+    <Section title="Words" wide>
+      <SectionProse className="mb-[0.3rem]">
         {ready ? banner(counts) : "Reading your saved progress…"} — pronunciation in
-        blue, meaning after it. Syllables you can already read stay dark; the pale
-        ones are still waiting on a letter.
-      </p>
+        blue, meaning after it, and the letters still missing in red along the
+        bottom. Syllables you can already read stay dark; the pale ones are still
+        waiting on a letter.
+      </SectionProse>
       <FilterRow value={filter} counts={counts} onChange={setFilter} label="Filter words" />
-      <ul className="m-0 list-none pl-0 wide:columns-2 wide:gap-[1.6rem]">
+      <ul className="m-0 flex list-none flex-wrap pl-0">
         {visible.map((item) => (
           <UnlockWord
             key={item.input}

@@ -6,7 +6,12 @@ import { isMedial } from '@/lib/hangul'
 import { play } from '@/lib/sound'
 import { cn } from '@/lib/utils'
 
-const table = (
+/**
+ * The course's own alphabet order, 10 across: consonants, then the doubled
+ * consonants and the vowels. Shared with the unlocks page, which draws the same
+ * grid for the whole alphabet rather than for one round.
+ */
+export const JAMO_TABLE_ORDER = (
   'ㄱ ㄴ ㄷ ㄹ ㅎ ㅋ ㅍ ㄲ ㄸ ㅃ ' +
   'ㅂ ㅅ ㅇ ㅈ ㅁ ㅊ ㅌ ㅆ ㅉ ㅢ ' +
   'ㅣ ㅡ ㅗ ㅜ ㅛ ㅠ ㅖ ㅘ ㅙ ㅚ ' +
@@ -46,7 +51,7 @@ export function JamoTable({ geometric, jamos, known = {}, newJamos = [], classNa
 
   return (
     <div className={cn('jamo-table flex w-[1000px] flex-wrap phone:w-full', className)}>
-      {table.map((jamo) => {
+      {JAMO_TABLE_ORDER.map((jamo) => {
         const isNew = newJamos.includes(jamo)
         const shown = active === jamo
         return (

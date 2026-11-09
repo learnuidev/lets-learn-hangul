@@ -4,9 +4,13 @@ import { UnlockSyllable } from "@/components/unlock-syllable";
 import { UnlockWord } from "@/components/unlock-word";
 import { stateKey, type UnlockItem, type UnlockProgress } from "@/lib/unlocks";
 
-/** How many rows of a group are listed before "Show more". */
-const WORD_PAGE = 24;
-const SYLLABLE_PAGE = 96;
+/**
+ * How many cells of a group are listed before "Show more" — whole rows of the
+ * 100px module, ten cells across, so a step never leaves a ragged edge. Words
+ * come 100 at a time.
+ */
+const WORD_PAGE = 100;
+const SYLLABLE_PAGE = 80;
 
 /**
  * One titled group inside a list — "Read now", "One letter away", "Still needs
@@ -32,7 +36,7 @@ interface WordGroupProps {
   highlight?: string | ReadonlySet<string>;
 }
 
-/** A group of words, as rows: spelling, pronunciation, meaning, what is missing. */
+/** A group of words, on the same ten-across 100px grid as the blocks. */
 export function WordGroup({ title, words, progress, highlight }: WordGroupProps) {
   const [limit, setLimit] = useState(WORD_PAGE);
 
@@ -43,7 +47,7 @@ export function WordGroup({ title, words, progress, highlight }: WordGroupProps)
   return (
     <div className="mt-[0.4rem] first:mt-0">
       <GroupHeader title={title} count={words.length} />
-      <ul className="m-0 list-none pl-0 wide:columns-2 wide:gap-[1.6rem]">
+      <ul className="m-0 flex list-none flex-wrap pl-0">
         {visible.map((word) => (
           <UnlockWord
             key={word.input}
@@ -70,7 +74,7 @@ interface SyllableGroupProps {
   progress: UnlockProgress;
 }
 
-/** A group of syllable blocks, as the same discs the collection grid uses. */
+/** A group of syllable blocks, ten cells across on the same module. */
 export function SyllableGroup({ title, blocks, progress }: SyllableGroupProps) {
   const [limit, setLimit] = useState(SYLLABLE_PAGE);
 
@@ -81,7 +85,7 @@ export function SyllableGroup({ title, blocks, progress }: SyllableGroupProps) {
   return (
     <div className="mt-[0.4rem] first:mt-0">
       <GroupHeader title={title} count={blocks.length} />
-      <ul className="m-0 flex list-none flex-wrap gap-x-[0.1rem] gap-y-[0.24rem] pl-0">
+      <ul className="m-0 flex list-none flex-wrap pl-0">
         {visible.map((block) => (
           <UnlockSyllable
             key={block.input}

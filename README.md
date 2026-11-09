@@ -241,7 +241,18 @@ from the saved profile:
   **Still needs letters**. That split, and the highlighted block inside each word, come from
   the same derived state; the reverse index (`wordsForBlock`) is built once with the rest of
   the collection.
-- Every letter disc opens `/unlocks/letters/$letter` — the same stage and the same three-way
+- The whole collection is drawn on one module: a **100px cell** on a 1000px column, the same
+  width and rhythm as the round summary's letter table and the `.radial` stage above it.
+  Letters are ten across (`UnlockLettersTable` — the round-end `JamoTable` grid, geometric
+  glyphs, red consonants and blue vowels, ghosts for the letters not learned yet, romanisation
+  revealed on hover), and syllable blocks and words are ten across in the same 100px cell, so
+  the three grids line up column for column. Each section keeps its own colours: the
+  collection's white/pale discs and blue romanizations for blocks; for words the spelling
+  (dark where the learner can already read it), blue pronunciation, gloss, and the letters
+  still missing in red beside the CEFR band. "Show more" moves in whole rows, 100 words and 80
+  blocks at a time. Prose inside a wide section is capped at 640px (`SectionProse`) so the
+  line length stays readable.
+- Every letter in that grid opens `/unlocks/letters/$letter` — the same stage and the same three-way
   split, asked of a letter instead: the blocks and words spelled with it (**Read now**,
   **One letter away** — only this letter is holding them back — and **Still needs letters**),
   the figures those counts feed, and the letters that arrive with it in the same lesson.

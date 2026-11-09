@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Circle } from "@/components/circle";
 import { Figure } from "@/components/figure";
 import { JamoLink } from "@/components/jamo-link";
-import { Section } from "@/components/section";
+import { Section, SectionProse } from "@/components/section";
 import { WordGroup } from "@/components/unlock-group";
 import { useUnlocks } from "@/hooks/use-unlocks";
 import type { Level, Round } from "@/data/types";
@@ -162,7 +162,7 @@ export function UnlocksBlockPage({ block, levels, rounds }: UnlocksBlockPageProp
         {actions}
       </div>
 
-      <Section title="Letters">
+      <Section title="Letters" wide>
         <ul className="m-0 flex list-none flex-wrap gap-x-[0.24rem] gap-y-[0.16rem] pl-0">
           {item.letters.map((letter, i) => (
             <li key={letter}>
@@ -207,12 +207,12 @@ export function UnlocksBlockPage({ block, levels, rounds }: UnlocksBlockPageProp
         </p>
       </Section>
 
-      <Section title={`Words with ${block}`}>
-        <p className="m-0 mb-[0.4rem] text-[15px] leading-[20px] opacity-55">
+      <Section title={`Words with ${block}`} wide>
+        <SectionProse className="mb-[0.4rem]">
           {words.length === 0
             ? "No word in the collection is spelled with this block on its own."
             : `${words.length} ${words.length === 1 ? "word uses" : "words use"} this block — ${read.length} readable now, ${almost.length} one letter away.`}
-        </p>
+        </SectionProse>
         <WordGroup title="Read now" words={read} progress={progress} highlight={block} />
         <WordGroup
           title="One letter away"
@@ -257,7 +257,7 @@ function UnlocksMissing({ block, total }: { block: string; total: number }) {
         </div>
       </div>
 
-      <Section title="Nothing here">
+      <Section title="Nothing here" wide>
         <p className="m-0">
           “{block}” isn’t one of the {total} syllable blocks in the collection.
           Every block is a single modern Hangul syllable — pick one from{" "}

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Circle } from "@/components/circle";
 import { Figure } from "@/components/figure";
 import { JamoLink } from "@/components/jamo-link";
-import { Section } from "@/components/section";
+import { Section, SectionProse } from "@/components/section";
 import { SyllableGroup, WordGroup } from "@/components/unlock-group";
 import { useUnlocks } from "@/hooks/use-unlocks";
 import type { Level, Round } from "@/data/types";
@@ -179,7 +179,7 @@ export function UnlocksLetterPage({ letter, levels, rounds }: UnlocksLetterPageP
         {actions}
       </div>
 
-      <Section title="Taught in">
+      <Section title="Taught in" wide>
         <p className="m-0">
           {lessonRound && lessonLevel ? (
             <>
@@ -201,9 +201,9 @@ export function UnlocksLetterPage({ letter, levels, rounds }: UnlocksLetterPageP
         </p>
         {siblings.length > 0 && (
           <>
-            <p className="m-0 mt-[0.26rem] mb-[0.16rem] text-[15px] leading-[20px] opacity-55">
+            <SectionProse className="mt-[0.26rem] mb-[0.16rem]">
               In the same lesson:
-            </p>
+            </SectionProse>
             <ul className="m-0 flex list-none flex-wrap gap-x-[0.24rem] gap-y-[0.16rem] pl-0">
               {siblings.map((sibling, i) => (
                 <li key={sibling}>
@@ -220,12 +220,12 @@ export function UnlocksLetterPage({ letter, levels, rounds }: UnlocksLetterPageP
         )}
       </Section>
 
-      <Section title={`Syllable blocks with ${letter}`}>
-        <p className="m-0 mb-[0.4rem] text-[15px] leading-[20px] opacity-55">
+      <Section title={`Syllable blocks with ${letter}`} wide>
+        <SectionProse className="mb-[0.4rem]">
           {syllables.length === 0
             ? "No syllable block in the collection is spelled with this letter."
             : `${syllables.length} ${syllables.length === 1 ? "block uses" : "blocks use"} this letter — ${show(syllableGroups.read.length)} readable now, ${show(syllableGroups.almost.length)} one letter away.`}
-        </p>
+        </SectionProse>
         <SyllableGroup title="Read now" blocks={syllableGroups.read} progress={progress} />
         <SyllableGroup
           title="One letter away"
@@ -239,12 +239,12 @@ export function UnlocksLetterPage({ letter, levels, rounds }: UnlocksLetterPageP
         />
       </Section>
 
-      <Section title={`Words with ${letter}`}>
-        <p className="m-0 mb-[0.4rem] text-[15px] leading-[20px] opacity-55">
+      <Section title={`Words with ${letter}`} wide>
+        <SectionProse className="mb-[0.4rem]">
           {words.length === 0
             ? "No word in the collection is spelled with this letter."
             : `${words.length} ${words.length === 1 ? "word uses" : "words use"} this letter — ${show(wordGroups.read.length)} readable now, ${show(wordGroups.almost.length)} one letter away.`}
-        </p>
+        </SectionProse>
         <WordGroup
           title="Read now"
           words={wordGroups.read}
@@ -294,7 +294,7 @@ function UnlocksLetterMissing({ letter, total }: { letter: string; total: number
         </div>
       </div>
 
-      <Section title="Nothing here">
+      <Section title="Nothing here" wide>
         <p className="m-0">
           “{letter}” isn’t one of the {total} letters this course teaches. Cluster
           finals such as ㄳ and ㄺ are never taught as letters — level 5 introduces
