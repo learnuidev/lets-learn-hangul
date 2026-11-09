@@ -16,9 +16,10 @@ import { Route as LearnedeverythingRouteImport } from './routes/learnedeverythin
 import { Route as NowwhatRouteImport } from './routes/nowwhat'
 import { Route as ReturnRouteImport } from './routes/return'
 import { Route as StatsRouteImport } from './routes/stats'
-import { Route as UnlocksRouteImport } from './routes/unlocks'
 import { Route as LevelLevelRouteImport } from './routes/level.$level'
+import { Route as UnlocksIndexRouteImport } from './routes/unlocks.index'
 import { Route as LevelLevelIndexRouteImport } from './routes/level.$level.index'
+import { Route as UnlocksBlocksBlockRouteImport } from './routes/unlocks.blocks.$block'
 import { Route as LevelLevelCompleteIndexRouteImport } from './routes/level.$level.complete.index'
 import { Route as LevelLevelCompleteLevelCompleteRouteImport } from './routes/level.$level.complete.$levelComplete'
 import { Route as LevelLevelIntroLevelIntroRouteImport } from './routes/level.$level.intro.$levelIntro'
@@ -74,20 +75,25 @@ const StatsRoute = StatsRouteImport.update({
   path: '/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
-const UnlocksRoute = UnlocksRouteImport.update({
-  id: '/unlocks',
-  path: '/unlocks',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LevelLevelRoute = LevelLevelRouteImport.update({
   id: '/level/$level',
   path: '/level/$level',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnlocksIndexRoute = UnlocksIndexRouteImport.update({
+  id: '/unlocks/',
+  path: '/unlocks/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LevelLevelIndexRoute = LevelLevelIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => LevelLevelRoute,
+} as any)
+const UnlocksBlocksBlockRoute = UnlocksBlocksBlockRouteImport.update({
+  id: '/unlocks/blocks/$block',
+  path: '/unlocks/blocks/$block',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const LevelLevelCompleteIndexRoute = LevelLevelCompleteIndexRouteImport.update({
   id: '/complete/',
@@ -210,8 +216,9 @@ export interface FileRoutesByFullPath {
   '/nowwhat': typeof NowwhatRoute
   '/return': typeof ReturnRoute
   '/stats': typeof StatsRoute
-  '/unlocks': typeof UnlocksRoute
   '/level/$level': typeof LevelLevelRouteWithChildren
+  '/unlocks/': typeof UnlocksIndexRoute
+  '/unlocks/blocks/$block': typeof UnlocksBlocksBlockRoute
   '/level/$level/': typeof LevelLevelIndexRoute
   '/level/$level/complete/$levelComplete': typeof LevelLevelCompleteLevelCompleteRoute
   '/level/$level/intro/$levelIntro': typeof LevelLevelIntroLevelIntroRoute
@@ -241,7 +248,8 @@ export interface FileRoutesByTo {
   '/nowwhat': typeof NowwhatRoute
   '/return': typeof ReturnRoute
   '/stats': typeof StatsRoute
-  '/unlocks': typeof UnlocksRoute
+  '/unlocks': typeof UnlocksIndexRoute
+  '/unlocks/blocks/$block': typeof UnlocksBlocksBlockRoute
   '/level/$level': typeof LevelLevelIndexRoute
   '/level/$level/complete/$levelComplete': typeof LevelLevelCompleteLevelCompleteRoute
   '/level/$level/intro/$levelIntro': typeof LevelLevelIntroLevelIntroRoute
@@ -271,8 +279,9 @@ export interface FileRoutesById {
   '/nowwhat': typeof NowwhatRoute
   '/return': typeof ReturnRoute
   '/stats': typeof StatsRoute
-  '/unlocks': typeof UnlocksRoute
   '/level/$level': typeof LevelLevelRouteWithChildren
+  '/unlocks/': typeof UnlocksIndexRoute
+  '/unlocks/blocks/$block': typeof UnlocksBlocksBlockRoute
   '/level/$level/': typeof LevelLevelIndexRoute
   '/level/$level/complete/$levelComplete': typeof LevelLevelCompleteLevelCompleteRoute
   '/level/$level/intro/$levelIntro': typeof LevelLevelIntroLevelIntroRoute
@@ -304,8 +313,9 @@ export interface FileRouteTypes {
     | '/nowwhat'
     | '/return'
     | '/stats'
-    | '/unlocks'
     | '/level/$level'
+    | '/unlocks/'
+    | '/unlocks/blocks/$block'
     | '/level/$level/'
     | '/level/$level/complete/$levelComplete'
     | '/level/$level/intro/$levelIntro'
@@ -336,6 +346,7 @@ export interface FileRouteTypes {
     | '/return'
     | '/stats'
     | '/unlocks'
+    | '/unlocks/blocks/$block'
     | '/level/$level'
     | '/level/$level/complete/$levelComplete'
     | '/level/$level/intro/$levelIntro'
@@ -364,8 +375,9 @@ export interface FileRouteTypes {
     | '/nowwhat'
     | '/return'
     | '/stats'
-    | '/unlocks'
     | '/level/$level'
+    | '/unlocks/'
+    | '/unlocks/blocks/$block'
     | '/level/$level/'
     | '/level/$level/complete/$levelComplete'
     | '/level/$level/intro/$levelIntro'
@@ -396,8 +408,9 @@ export interface RootRouteChildren {
   NowwhatRoute: typeof NowwhatRoute
   ReturnRoute: typeof ReturnRoute
   StatsRoute: typeof StatsRoute
-  UnlocksRoute: typeof UnlocksRoute
   LevelLevelRoute: typeof LevelLevelRouteWithChildren
+  UnlocksIndexRoute: typeof UnlocksIndexRoute
+  UnlocksBlocksBlockRoute: typeof UnlocksBlocksBlockRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -451,18 +464,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StatsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/unlocks': {
-      id: '/unlocks'
-      path: '/unlocks'
-      fullPath: '/unlocks'
-      preLoaderRoute: typeof UnlocksRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/level/$level': {
       id: '/level/$level'
       path: '/level/$level'
       fullPath: '/level/$level'
       preLoaderRoute: typeof LevelLevelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unlocks/': {
+      id: '/unlocks/'
+      path: '/unlocks'
+      fullPath: '/unlocks/'
+      preLoaderRoute: typeof UnlocksIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/level/$level/': {
@@ -471,6 +484,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/level/$level/'
       preLoaderRoute: typeof LevelLevelIndexRouteImport
       parentRoute: typeof LevelLevelRoute
+    }
+    '/unlocks/blocks/$block': {
+      id: '/unlocks/blocks/$block'
+      path: '/unlocks/blocks/$block'
+      fullPath: '/unlocks/blocks/$block'
+      preLoaderRoute: typeof UnlocksBlocksBlockRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/level/$level/complete/': {
       id: '/level/$level/complete/'
@@ -681,8 +701,9 @@ const rootRouteChildren: RootRouteChildren = {
   NowwhatRoute: NowwhatRoute,
   ReturnRoute: ReturnRoute,
   StatsRoute: StatsRoute,
-  UnlocksRoute: UnlocksRoute,
   LevelLevelRoute: LevelLevelRouteWithChildren,
+  UnlocksIndexRoute: UnlocksIndexRoute,
+  UnlocksBlocksBlockRoute: UnlocksBlocksBlockRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

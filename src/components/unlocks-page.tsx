@@ -3,11 +3,13 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Circle } from "@/components/circle";
 import { Figure } from "@/components/figure";
+import { JamoDisc } from "@/components/jamo-disc";
+import { ShowMore } from "@/components/show-more";
+import { UnlockWord } from "@/components/unlock-word";
 import { useUnlocks } from "@/hooks/use-unlocks";
 import type { Level, Round } from "@/data/types";
-import { getJamoHint } from "@/lib/display";
 import { nextLesson } from "@/lib/resume";
-import { canRead, stateKey, type UnlockCounts, type UnlockItem, type UnlockState, type UnlockStatus } from "@/lib/unlocks";
+import { stateKey, type UnlockCounts, type UnlockItem, type UnlockState, type UnlockStatus } from "@/lib/unlocks";
 import { useUser } from "@/providers/user-store";
 import { cn } from "@/lib/utils";
 
@@ -170,31 +172,12 @@ export function UnlocksPage({ levels, rounds }: UnlocksPageProps) {
         </p>
         <ul className="flex flex-wrap gap-x-[0.16rem] gap-y-[0.2rem]">
           {progress.letters.map((letter, i) => (
-            <li key={letter.letter} className="flex w-[0.92rem] flex-col items-center">
-              <span className="relative block h-[0.72rem] w-[0.72rem]">
-                <Circle
-                  fill={letter.known ? "white" : "#e7e0d1"}
-                  className="absolute top-0 left-0 h-full w-full"
-                  pop={letter.known ? 0.02 * i : false}
-                  popScale={0.5}
-                />
-                <span
-                  className={cn(
-                    "relative z-1 flex h-full w-full items-center justify-center text-[0.36rem] leading-none font-bold",
-                    letter.known ? "text-ink" : "text-ink/25",
-                  )}
-                >
-                  {letter.letter}
-                </span>
-              </span>
-              <span
-                className={cn(
-                  "mt-[0.05rem] text-[11px] leading-[12px] font-semibold lowercase",
-                  letter.known ? "opacity-40" : "opacity-20",
-                )}
-              >
-                {getJamoHint(letter.letter)}
-              </span>
+            <li key={letter.letter}>
+              <JamoDisc
+                letter={letter.letter}
+                known={letter.known}
+                delay={letter.known ? 0.02 * i : false}
+              />
             </li>
           ))}
         </ul>
@@ -358,7 +341,8 @@ function SyllableSection({
       <p className="m-0 mb-[0.3rem] text-[15px] leading-[20px] opacity-55">
         {ready ? banner(counts) : "Reading your saved progress…"} — the blue line
         under each block is how it sounds. A block turns white once every letter
-        it is spelled with has come up in a lesson.
+        it is spelled with has come up in a lesson; open one to see the words it
+        appears in.
       </p>
       <FilterRow value={filter} counts={counts} onChange={setFilter} label="Filter syllables" />
       <Legend />
@@ -367,47 +351,57 @@ function SyllableSection({
           const state = states[stateKey("syllable", item.input)];
           const status = state?.status ?? "locked";
           return (
-            <li
-              key={item.input}
-              className="flex w-[1.34rem] flex-col items-center"
-              title={`${item.input} — ${item.roman} — ${item.en}${
-                status === "full" ? "" : ` · needs ${(state?.missing ?? []).join(" ")}`
-              }`}
-            >
-              <span className="relative block h-[0.92rem] w-[0.92rem]">
-                <Circle
-                  fill={status === "locked" ? "#e7e0d1" : "white"}
-                  className="absolute top-0 left-0 h-full w-full"
-                />
+            <li key={item.input}>
+              <Link
+                to="/unlocks/blocks/$block"
+                params={{ block: item.input }}
+                title={`${item.input} — ${item.roman} — ${item.en}${
+                  status === "full" ? "" : ` · needs ${(state?.missing ?? []).join(" ")}`
+                }`}
+                className={cn(
+                  "group/block flex w-[1.34rem] flex-col items-center rounded-[4px] outline-none",
+                  "transition-colors hover:bg-white/70 focus-visible:ring-[3px] focus-visible:ring-brand-blue/40",
+                )}
+              >
+                <span className="relative block h-[0.92rem] w-[0.92rem]">
+                  <Circle
+                    fill={status === "locked" ? "#e7e0d1" : "white"}
+                    className="absolute top-0 left-0 h-full w-full"
+                  />
+                  <span
+                    className={cn(
+                      "relative z-1 flex h-full w-full items-center justify-center font-korean text-[0.4rem] leading-none font-bold",
+                      status === "full"
+                        ? "text-ink"
+                        : status === "partial"
+                          ? "text-ink/45"
+                          : "text-ink/30",
+                    )}
+                  >
+                    {item.input}
+                  </span>
+                </span>
                 <span
                   className={cn(
-                    "relative z-1 flex h-full w-full items-center justify-center font-korean text-[0.4rem] leading-none font-bold",
+                    "mt-[0.04rem] w-full truncate text-center text-[12px] leading-[13px] font-semibold",
                     status === "full"
-                      ? "text-ink"
-                      : status === "partial"
-                        ? "text-ink/45"
-                        : "text-ink/30",
+                      ? "text-brand-blue/75"
+                      : "text-brand-blue/35",
+                    "transition-colors group-hover/block:text-brand-blue",
                   )}
                 >
-                  {item.input}
+                  {item.roman}
                 </span>
-              </span>
-              <span
-                className={cn(
-                  "mt-[0.04rem] w-full truncate text-center text-[12px] leading-[13px] font-semibold",
-                  status === "full" ? "text-brand-blue/75" : "text-brand-blue/35",
-                )}
-              >
-                {item.roman}
-              </span>
-              <span
-                className={cn(
-                  "w-full truncate text-center text-[11px] leading-[13px] tablet-down:text-[10px]",
-                  status === "full" ? "opacity-45" : "opacity-25",
-                )}
-              >
-                {item.en}
-              </span>
+                <span
+                  className={cn(
+                    "w-full truncate text-center text-[11px] leading-[13px] tablet-down:text-[10px]",
+                    status === "full" ? "opacity-45" : "opacity-25",
+                    "transition-opacity group-hover/block:opacity-70",
+                  )}
+                >
+                  {item.en}
+                </span>
+              </Link>
             </li>
           );
         })}
@@ -453,61 +447,14 @@ function WordSection({
       </p>
       <FilterRow value={filter} counts={counts} onChange={setFilter} label="Filter words" />
       <ul className="wide:columns-2 wide:gap-[1.6rem]">
-        {visible.map((item) => {
-          const state = states[stateKey("word", item.input)];
-          const status = state?.status ?? "locked";
-          return (
-            <li
-              key={item.input}
-              className="flex items-baseline gap-[0.24rem] break-inside-avoid border-b border-ink/10 py-[0.09rem]"
-            >
-              <span
-                className={cn(
-                  "shrink-0 text-[0.5rem] leading-[0.68rem] font-bold",
-                  status === "locked" && "opacity-30",
-                )}
-              >
-                {(item.blocks ?? Array.from(item.input)).map((block, i) => (
-                  <span
-                    key={`${block}-${i}`}
-                    className={cn(
-                      "font-korean",
-                      canRead(block, known).readable ? "text-ink" : "text-ink/25",
-                    )}
-                  >
-                    {block}
-                  </span>
-                ))}
-              </span>
-              <span
-                className={cn(
-                  "shrink-0 text-[12px] leading-[15px] font-semibold italic",
-                  status === "full" ? "text-brand-blue/75" : "text-brand-blue/35",
-                )}
-              >
-                {item.roman}
-              </span>
-              <span
-                className={cn(
-                  "min-w-0 flex-1 truncate text-[13px] leading-[16px]",
-                  status === "full" ? "opacity-45" : "opacity-25",
-                )}
-              >
-                {item.en}
-              </span>
-              {status === "partial" && (
-                <span className="shrink-0 text-[11px] leading-[14px] font-semibold text-brand-red/70">
-                  needs {(state?.missing ?? []).join(" ")}
-                </span>
-              )}
-              {item.level && (
-                <span className="shrink-0 text-[11px] leading-[14px] uppercase opacity-25">
-                  {item.level}
-                </span>
-              )}
-            </li>
-          );
-        })}
+        {visible.map((item) => (
+          <UnlockWord
+            key={item.input}
+            item={item}
+            state={states[stateKey("word", item.input)]}
+            known={known}
+          />
+        ))}
       </ul>
       <ShowMore
         step={WORD_PAGE}
@@ -516,37 +463,5 @@ function WordSection({
         onMore={() => setLimit(limit + WORD_PAGE)}
       />
     </Section>
-  );
-}
-
-/** "Show more", with the running count so the collection's size stays honest. */
-function ShowMore({
-  step,
-  shown,
-  total,
-  onMore,
-}: {
-  step: number;
-  shown: number;
-  total: number;
-  onMore: () => void;
-}) {
-  if (shown >= total) {
-    return total === 0 ? null : (
-      <p className="mt-[0.24rem] mb-0 text-[11px] leading-[14px] uppercase tracking-[0.08em] opacity-30">
-        that’s all {total}
-      </p>
-    );
-  }
-
-  return (
-    <div className="mt-[0.28rem] flex items-baseline gap-[0.3rem]">
-      <Button variant="link" size="none" onClick={onMore}>
-        Show {Math.min(step, total - shown)} more
-      </Button>
-      <span className="text-[11px] leading-[14px] uppercase tracking-[0.08em] opacity-30">
-        {shown} of {total}
-      </span>
-    </div>
   );
 }

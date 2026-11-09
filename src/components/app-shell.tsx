@@ -18,6 +18,9 @@ export function AppShell({ levels, rounds, geometric, children }: AppShellProps)
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const showConstellation = /^\/(?:nowwhat)?$/.test(pathname)
   const page = /nowwhat/.test(pathname) ? 'nowwhat' : 'landing'
+  // The record pages, and every block under them, scroll and carry their own
+  // attribution; the pinned footer would sit on top of their content.
+  const scrolling = pathname.startsWith('/stats') || pathname.startsWith('/unlocks')
 
   return (
     <div className="app">
@@ -29,14 +32,14 @@ export function AppShell({ levels, rounds, geometric, children }: AppShellProps)
 
       {/* No dead link when the page itself is already open. */}
       {pathname !== '/stats' && <StatsLink />}
-      {pathname !== '/unlocks' && <UnlocksLink />}
+      {!pathname.startsWith('/unlocks') && <UnlocksLink />}
 
       {/*
        * The footer is pinned to the viewport, so it only works on the app's
-       * single-screen stages. `/stats` and `/unlocks` scroll, and each carries
-       * the same attribution in its own footnote instead.
+       * single-screen stages. `/stats`, `/unlocks` and the block pages scroll,
+       * and each carries the same attribution in its own footnote instead.
        */}
-      {pathname !== '/stats' && pathname !== '/unlocks' && (
+      {!scrolling && (
         <div className="app__footer fixed bottom-[0.5rem] left-1/2 z-[10000] -translate-x-1/2 text-center text-[14px] leading-[1em] text-shadow-butter opacity-70 tablet-down:hidden">
           Written, designed, and built by{' '}
           <a href="http://noahburney.net" target="_blank" rel="noreferrer">

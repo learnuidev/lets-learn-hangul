@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { UnlocksPage } from '@/components/unlocks-page'
 import { getCourse } from '@/lib/course'
 
-export const Route = createFileRoute('/unlocks')({
+export const Route = createFileRoute('/unlocks/')({
   loader: () => {
     const { levels, rounds } = getCourse()
     return { levels, rounds }

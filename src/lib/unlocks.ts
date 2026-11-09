@@ -132,6 +132,10 @@ export interface UnlockIndex {
   readonly syllables: readonly UnlockItem[]
   /** Words, easiest first. */
   readonly words: readonly UnlockItem[]
+  /** Block spelling → its item, for the block's own page. */
+  readonly blockByInput: Record<string, UnlockItem>
+  /** Block spelling → every word spelled with it, in index order. */
+  readonly wordsForBlock: Record<string, readonly UnlockItem[]>
   /** Items each lesson completes, for the "this round unlocked…" nudge. */
   readonly byLesson: Record<string, LessonUnlocks>
 }
@@ -227,7 +231,28 @@ export function unlockIndex(rounds: Record<string, Round>): UnlockIndex {
     if (bucket) bucket.words += 1
   }
 
-  const index: UnlockIndex = { course, syllables, words, byLesson }
+  const blockByInput: Record<string, UnlockItem> = {}
+  for (const item of syllables) blockByInput[item.input] = item
+
+  // Which words a block appears in — the reverse of `blocks`. A word that
+  // repeats a block still lists it once.
+  const buckets = new Map<string, UnlockItem[]>()
+  for (const word of words) {
+    for (const block of new Set(word.blocks ?? [])) {
+      const list = buckets.get(block)
+      if (list) list.push(word)
+      else buckets.set(block, [word])
+    }
+  }
+
+  const index: UnlockIndex = {
+    course,
+    syllables,
+    words,
+    blockByInput,
+    wordsForBlock: Object.fromEntries(buckets),
+    byLesson,
+  }
   cached = { rounds, index }
   return index
 }
