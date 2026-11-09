@@ -3,6 +3,7 @@ import { Link, useRouterState } from '@tanstack/react-router'
 import { Constellation } from '@/components/constellation'
 import { CourseIndex } from '@/components/course-index'
 import { StatsLink } from '@/components/stats-link'
+import { UnlocksLink } from '@/components/unlocks-link'
 import type { Level, Round } from '@/data/types'
 
 interface AppShellProps {
@@ -26,15 +27,16 @@ export function AppShell({ levels, rounds, geometric, children }: AppShellProps)
 
       <CourseIndex levels={levels} rounds={rounds} />
 
-      {/* No dead link when the stats page is already open. */}
+      {/* No dead link when the page itself is already open. */}
       {pathname !== '/stats' && <StatsLink />}
+      {pathname !== '/unlocks' && <UnlocksLink />}
 
       {/*
        * The footer is pinned to the viewport, so it only works on the app's
-       * single-screen stages. `/stats` scrolls, and the page carries the same
-       * attribution in its own footnote instead.
+       * single-screen stages. `/stats` and `/unlocks` scroll, and each carries
+       * the same attribution in its own footnote instead.
        */}
-      {pathname !== '/stats' && (
+      {pathname !== '/stats' && pathname !== '/unlocks' && (
         <div className="app__footer fixed bottom-[0.5rem] left-1/2 z-[10000] -translate-x-1/2 text-center text-[14px] leading-[1em] text-shadow-butter opacity-70 tablet-down:hidden">
           Written, designed, and built by{' '}
           <a href="http://noahburney.net" target="_blank" rel="noreferrer">

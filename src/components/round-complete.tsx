@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BackForwardButtons } from "@/components/back-forward-buttons";
@@ -10,6 +10,7 @@ import { formatSeconds, getJamoHint } from "@/lib/display";
 import { isMedial } from "@/lib/hangul";
 import { keyMap } from "@/lib/collections";
 import { readStats } from '@/lib/stats'
+import { useUnlockIndex } from "@/hooks/use-unlocks";
 import { cn } from "@/lib/utils";
 
 interface RoundCompleteProps {
@@ -45,6 +46,11 @@ export function RoundComplete({
   const newJamos = round.jamo ?? [];
 
   const nextRound = rounds[`${levelParam}.${Number(roundParam) + 1}`];
+
+  // What this round's new letters let the learner read for the first time. The
+  // count is fixed once the round is done, so it stays right on a reload.
+  const unlocks = useUnlockIndex(rounds).byLesson[`${levelParam}.${roundParam}`];
+  const unlocked = unlocks ? unlocks.syllables + unlocks.words : 0;
 
   const current = parseFloat(`${levelParam}.${roundParam}`);
   const known = keyMap(
@@ -103,6 +109,17 @@ export function RoundComplete({
           ) : (
             <p className="relative z-5">
               You now know <b>{Object.keys(known).length}</b> Hangul letters!
+            </p>
+          )}
+          {showingReview && unlocked > 0 && unlocks && (
+            <p className="relative z-5 mt-[0.12rem] text-[15px] leading-[20px] opacity-60">
+              They unlock <b className="text-brand-blue">{unlocks.syllables}</b>{" "}
+              syllables and <b className="text-brand-blue">{unlocks.words}</b>{" "}
+              words — see{" "}
+              <Link to="/unlocks" className="text-brand-blue">
+                everything you can read
+              </Link>
+              .
             </p>
           )}
         </div>

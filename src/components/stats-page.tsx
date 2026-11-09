@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Circle } from "@/components/circle";
+import { Figure } from "@/components/figure";
 import type { Level, Round } from "@/data/types";
 import { formatSeconds } from "@/lib/display";
 import {
@@ -276,63 +277,6 @@ function Section({
   );
 }
 
-/**
- * A labelled white disc: the round summary's figure, with an optional caption
- * under the number. The wrapper's `text-[…]` sets the number's size, so the same
- * component works at every scale in the cluster.
- */
-function Figure({
-  className,
-  circle,
-  label,
-  labelClassName,
-  value,
-  detail,
-  tone,
-}: {
-  className?: string;
-  circle: string;
-  label: string;
-  labelClassName?: string;
-  value: number | string;
-  detail?: string;
-  tone: string;
-}) {
-  return (
-    <div className={cn("absolute", className)}>
-      <Circle
-        className={cn("absolute top-0 left-0", circle)}
-        pop={0.15}
-        popScale={0.5}
-      />
-      <label className={cn("absolute whitespace-nowrap", labelClassName)}>
-        {label}
-      </label>
-      <div
-        className={cn(
-          "relative z-1 flex flex-col items-center justify-center text-center",
-          circle,
-        )}
-      >
-        <div
-          className={cn("leading-[1em] font-black", tone)}
-          style={{ fontSize: "1.15em" }}
-        >
-          {value}
-        </div>
-        {detail && (
-          <div
-            className="mt-[0.06em] opacity-45"
-            style={{ fontSize: "0.32em", lineHeight: 1.3 }}
-          >
-            {detail}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 /** One level's practiced rounds, laid out like the course index rows. */
 function PracticeList({
   practiced,
@@ -540,10 +484,22 @@ function ActivityDiscs({ days }: { days: DaySlice[] }) {
 }
 
 /** Every letter the course teaches — the denominator on the Letters disc. */
+/**
+ * Every letter the course teaches — the denominator on the Letters disc.
+ *
+ * `-` is the course's placeholder for a syllable with no initial consonant,
+ * which is ㅇ, so it is counted as that letter and not as one of its own. That
+ * keeps this figure on the same 40 letters the course, `/learnedemall` and the
+ * unlocks page all report.
+ */
+function courseLetter(jamo: string): string {
+  return jamo === "-" ? "ㅇ" : jamo;
+}
+
 function countCourseLetters(rounds: Record<string, Round>): number {
   const seen = new Set<string>();
   for (const round of Object.values(rounds)) {
-    for (const jamo of round.jamo ?? []) seen.add(jamo);
+    for (const jamo of round.jamo ?? []) seen.add(courseLetter(jamo));
   }
   return seen.size;
 }
@@ -560,7 +516,7 @@ function countKnownLetters(
     const [level, roundNumber] = parseRoundKey(key);
     if (level > uptoLevel || (level === uptoLevel && roundNumber > uptoRound))
       continue;
-    for (const jamo of round.jamo ?? []) seen.add(jamo);
+    for (const jamo of round.jamo ?? []) seen.add(courseLetter(jamo));
   }
 
   return seen.size;
