@@ -140,6 +140,40 @@ const words = [...wordsByInput.values()]
   .sort((a, b) => byString(a.input, b.input))
   .map((word) => [word.input, word.en, word.level])
 
+// ------------------------------------------------------- translation fixes
+
+/**
+ * Hand-written corrections to the dataset's English glosses, keyed by the
+ * Korean spelling. They live in `src/data/translation-fixes.json` rather than
+ * in this script so that they can be reviewed as data, and they are applied
+ * here so that a regeneration cannot revert them.
+ */
+const fixesFile = path.resolve(repo, 'src/data/translation-fixes.json')
+const fixes = fs.existsSync(fixesFile)
+  ? JSON.parse(fs.readFileSync(fixesFile, 'utf8'))
+  : {}
+
+/**
+ * Overwrite the gloss of every entry named in `table`. A key that matches no
+ * entry means the correction has gone stale — fail the build instead of
+ * silently dropping it.
+ */
+function applyFixes(rows, table, label) {
+  const pending = new Set(Object.keys(table ?? {}))
+  for (const row of rows) {
+    if (!pending.has(row[0])) continue
+    row[1] = table[row[0]]
+    pending.delete(row[0])
+  }
+  for (const key of pending) {
+    console.error(`  ✗ ${label} fix for "${key}" matches no entry in the dataset`)
+  }
+  if (pending.size > 0) process.exitCode = 1
+}
+
+applyFixes(components, fixes.components, 'component')
+applyFixes(words, fixes.words, 'word')
+
 // ---------------------------------------------------------------- emit module
 
 function tupleLines(rows) {
@@ -154,6 +188,9 @@ const banner = `/**
  *
  * The course in \`course.ts\` teaches 40 letters; these entries are what those
  * letters unlock. \`src/lib/unlocks.ts\` decides which are readable right now.
+ *
+ * Glosses come from the dataset except where \`src/data/translation-fixes.json\`
+ * overrides them; correct a translation there, not in this file.
  */`
 
 const source = `${banner}

@@ -21,7 +21,7 @@ export const words: Word[] = [
   },
   {
     word: "침",
-    translation: "spit",
+    translation: "saliva",
     image: {
       url: "",
       source: {
@@ -58,7 +58,7 @@ export const words: Word[] = [
   },
   {
     word: "김",
-    translation: "nori (laver)",
+    translation: "seaweed (laver)",
     latin: "gim",
     image: {
       url: "",
@@ -546,7 +546,7 @@ export const words: Word[] = [
   },
   {
     word: "산",
-    translation: "Mountain",
+    translation: "mountain",
     image: {
       url: "",
       source: {
@@ -987,7 +987,7 @@ export const words: Word[] = [
   },
   {
     word: "한국",
-    translation: "Korean",
+    translation: "Korea",
     latin: "Hangook",
     image: {
       url: "",
@@ -1006,7 +1006,7 @@ export const words: Word[] = [
   },
   {
     word: "후추",
-    translation: "Black pepper",
+    translation: "black pepper",
     image: {
       url: "",
       source: {
@@ -1279,7 +1279,7 @@ export const words: Word[] = [
   },
   {
     word: "실패",
-    translation: "fail",
+    translation: "failure",
     latin: "shilpae",
     image: {
       url: "",
@@ -1985,7 +1985,7 @@ export const words: Word[] = [
   },
   {
     word: "싸",
-    translation: "expensive",
+    translation: "cheap",
     latin: "",
     image: {
       url: "",
@@ -2004,7 +2004,7 @@ export const words: Word[] = [
   },
   {
     word: "비싸",
-    translation: "cheap",
+    translation: "expensive",
     latin: "",
     image: {
       url: "",
@@ -2513,7 +2513,7 @@ export const words: Word[] = [
   },
   {
     word: "티비",
-    translation: "T.V.",
+    translation: "TV",
     image: {
       url: "",
       source: {
@@ -3092,7 +3092,7 @@ export const words: Word[] = [
   },
   {
     word: "의리",
-    translation: "honor",
+    translation: "loyalty",
     latin: "",
     image: {
       url: "",
@@ -3436,7 +3436,7 @@ export const words: Word[] = [
   {
     word: "햇반", // MACHINE
     romanizations: [""],
-    translation: "seashore",
+    translation: "instant rice",
     audio: {
       url: "words/haetban.mp3",
     },
@@ -3540,7 +3540,7 @@ export const words: Word[] = [
   {
     word: "생리",
     romanizations: [""],
-    translation: "physiology",
+    translation: "menstruation",
     audio: {
       url: "words/saengri.mp3",
     },
@@ -3556,7 +3556,7 @@ export const words: Word[] = [
   {
     word: "식량",
     romanizations: [""],
-    translation: "rations",
+    translation: "food (provisions)",
     audio: {
       url: "words/sikryang.mp3",
     },
@@ -3580,7 +3580,7 @@ export const words: Word[] = [
   {
     word: "식물",
     romanizations: [""],
-    translation: "foodstuffs",
+    translation: "plant",
     audio: {
       url: "words/sikmul.mp3",
     },
@@ -3652,7 +3652,7 @@ export const words: Word[] = [
   {
     word: "옆문",
     romanizations: [""],
-    translation: "next door",
+    translation: "side door",
     audio: {
       url: "words/yeopmun.mp3",
     },
@@ -3668,7 +3668,7 @@ export const words: Word[] = [
   {
     word: "얻는다", // MACHINE
     romanizations: [""],
-    translation: "carrying",
+    translation: "getting",
     audio: {
       url: "words/eotneunda.mp3",
     },
@@ -3764,7 +3764,7 @@ export const words: Word[] = [
   {
     word: "신랑",
     romanizations: [""],
-    translation: "[bride]groom",
+    translation: "groom",
     audio: {
       url: "words/sinrang.mp3",
     },
@@ -3828,7 +3828,7 @@ export const words: Word[] = [
   {
     word: "없는",
     romanizations: [""],
-    translation: "non-existant",
+    translation: "nonexistent",
     audio: {
       url: "words/eobsneun.mp3",
     },

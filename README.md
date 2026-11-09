@@ -214,6 +214,10 @@ from the saved profile:
   `node scripts/build-korean-data.mjs` (its header documents the source layout). The module is
   committed, like `course.ts`, and only the unlocks route imports it, so it rides in its own
   chunk instead of the shared bundle.
+- `src/data/translation-fixes.json` — hand-written corrections to those glosses, keyed by the
+  Korean spelling. The generator applies them, so a correction is never lost to a rebuild, and a
+  key that no longer matches an entry fails the build instead of failing silently. Lesson words
+  live in `words.ts` and are corrected there directly.
 - Each item stores the lesson that teaches the **last** of its letters — the lesson that makes
   it readable. That one number orders the page (easiest first) and groups the collection.
 - Cluster finals (ㄳ, ㄺ, ㅄ, …) are the one exception: the course never introduces them as
@@ -252,12 +256,13 @@ from the saved profile:
   still missing in red beside the CEFR band. "Show more" moves in whole rows, 100 words and 80
   blocks at a time. Prose inside a wide section is capped at 640px (`SectionProse`) so the
   line length stays readable.
-- Two independent filters (`src/components/filters.tsx`): the **state** pills (All / Read /
+- Two filters, one direction (`src/components/filters.tsx`): the **state** pills (All / Read /
   Half-read / Locked) above the list, and a **CEFR level** dropdown (`LevelSelect`,
-  A1/A2/B1/B2) at the right-hand end of the Words title row. Their counts always describe the
-  whole collection — picking a level leaves the pills' numbers alone, and picking a state
-  leaves the dropdown's alone; the two simply combine over the grid. The level dropdown is
-  also on a letter's and a block's page, over that page's own words.
+  A1/A2/B1/B2) at the right-hand end of the Words title row. The pills always count the whole
+  collection — picking a level never rewrites them. The dropdown is the finer read: its counts
+  follow the selected state, so "Locked" reports its own A1/A2/B1/B2 split
+  (`All 298, A1 115, A2 78, B1 52, B2 53`). The grid is the intersection of the two. The level
+  dropdown is also on a letter's and a block's page, over that page's own words.
 - Every letter in that grid opens `/unlocks/letters/$letter` — the same stage and the same three-way
   split, asked of a letter instead: the blocks and words spelled with it (**Read now**,
   **One letter away** — only this letter is holding them back — and **Still needs letters**),
